@@ -12,21 +12,21 @@ namespace s649_DummyPracticeMod
     [HarmonyPatch]
     internal class StatsStaminaPatch
     {
-        Chara c_trainer;
-        AIAct aiAct;
-        int sleepiness;// = CC.sleepiness.GetValue();
+        static Chara c_trainer;
+        static AIAct aiAct;
+        static int sleepiness;// = CC.sleepiness.GetValue();
         //int slpPhase;
-        int hunger;// = CC.hunger.GetValue();
+        static int hunger;// = CC.hunger.GetValue();
         //int hngPhase;
         //int maxSleepiness;
         //int maxHunger;
-        int maxStamina;
+        static int maxStamina;
         //private static readonly string modNS = "DPM";
-        private MyLogger myLogger => MainPlugin.myLogger;
+        private static MyLogger myLogger => MainPlugin.myLogger;
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(StatsStamina), "Mod")]
-        public bool Prefix(StatsStamina __instance, int a)
+        public static bool Prefix(StatsStamina __instance, int a)
         {
             if (a >= 0 || BepInConfig.exchangeMenu == ExChangeMenu.None) return true;
             ExChangeMenu menu = BepInConfig.exchangeMenu;
@@ -242,20 +242,20 @@ namespace s649_DummyPracticeMod
             return (200 - value / 2 * 3) * rate / 100;
         }
         */
-        private bool IsEnableSleepinessExchange()
+        private static bool IsEnableSleepinessExchange()
         {
             if (!c_trainer.IsPC) return false;
             if (sleepiness > BepInConfig.sleeinessExchangeUpperLimit) return false;
             if (sleepiness < BepInConfig.sleeinessExchangeLowerLimit) return false;
             return true;
         }
-        private bool IsEnableHungerExchange()
+        private static bool IsEnableHungerExchange()
         {
             if (hunger > BepInConfig.hungerExchangeUpperLimit) return false;
             if (hunger < BepInConfig.hungerExchangeLowerLimit) return false;
             return true;
         }
-        private bool TrySleepinessExchange(int value)
+        private static bool TrySleepinessExchange(int value)
         {
             //int max = maxStamina;
             ////////int seed2 = (sleepiness > maxSleepiness / 2) ? 2 : 4;
@@ -282,7 +282,7 @@ namespace s649_DummyPracticeMod
             ////////////////////////////
 
         }
-        private bool TryHungerExchange(int value)
+        private static bool TryHungerExchange(int value)
         {
             //int max = maxStamina;
             ////////int seed2 = (sleepiness > maxSleepiness / 2) ? 2 : 4;
