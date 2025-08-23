@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Meta>
+  <title>Dummy Practice Mod</title>
+  <id>s649_DummyPracticeMod</id>
+  <author>sig649</author>
+  <builtin>false</builtin>
+  <loadPriority>105</loadPriority>
+  <version>0.23.152</version>
+  <description>null</description>
+  <tags>QoL</tags>
+</Meta>
