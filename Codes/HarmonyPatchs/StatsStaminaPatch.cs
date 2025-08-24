@@ -293,7 +293,7 @@ namespace s649_DummyPracticeMod
         */
         private static bool TrySleepinessExchange()
         {
-            if (doSleepinessExchange && EClass.rnd(sleepiness / (100 / BepInConfig.sleeinessExchangeDifficulty)) == 0)
+            if (doSleepinessExchange && EClass.rnd(sleepiness / (BepInConfig.sleeinessExchangeRate)) == 0)
             {
                 exchange = FatigueSetOrConvert(0);
                 c_trainer.sleepiness.Mod(exchange);
@@ -305,7 +305,7 @@ namespace s649_DummyPracticeMod
         }
         private static bool TryHungerExchange()
         {
-            if (doHungerExchange && EClass.rnd(hunger / (100 / BepInConfig.hungerExchangeDifficulty)) == 0)
+            if (doHungerExchange && EClass.rnd(hunger / (BepInConfig.hungerExchangeRate)) == 0)
             {
                 exchange = FatigueSetOrConvert(1);
                 c_trainer.hunger.Mod(exchange);
