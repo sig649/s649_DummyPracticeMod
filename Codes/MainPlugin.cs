@@ -15,7 +15,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.0.2";
+        public const string MOD_VERSION = "1.0.0.3";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -85,12 +85,12 @@ namespace s649_DummyPracticeMod
             //CE_ModEnable = Config.Bind("#general", "Mod_Enable", true, "Enable Mod function");
             CE_ExChangeMenu = Config.Bind("#00-ExchangeSelect", "ExChangeMenu", PluginSettings.ExChangeMenu.Sleepiness_priority, ce_exchangemenu_desc);
             //CE_SleepinessExchangeBaseRate = Config.Bind("#01-Sleepiness", "SleepinessExchangeBaseRate", 50, "desc");
-            CE_SleepinessExchangeUpperLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeUpperLimit", 99, ce_SleepinessExchangeUpperLimit_desc);
-            CE_SleepinessExchangeLowerLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeLowerLimit", 1, ce_SleepinessExchangeLowerLimit_desc);
+            CE_SleepinessExchangeUpperLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeUpperLimit", 100, ce_SleepinessExchangeUpperLimit_desc);
+            CE_SleepinessExchangeLowerLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeLowerLimit", 0, ce_SleepinessExchangeLowerLimit_desc);
 
             //CE_HungerExchangeBaseRate = Config.Bind("#02-Hunger", "HungerExchangeBaseRate", 50, "desc");
-            CE_HungerExchangeUpperLimit = Config.Bind("#02-Hunger", "HungerExchangeUpperLimit", 99, ce_HungerExchangeUpperLimit_desc);
-            CE_HungerExchangeLowerLimit = Config.Bind("#02-Hunger", "HungerExchangeLowerLimit", 1, ce_HungerExchangeLowerLimit_desc);
+            CE_HungerExchangeUpperLimit = Config.Bind("#02-Hunger", "HungerExchangeUpperLimit", 100, ce_HungerExchangeUpperLimit_desc);
+            CE_HungerExchangeLowerLimit = Config.Bind("#02-Hunger", "HungerExchangeLowerLimit", 0, ce_HungerExchangeLowerLimit_desc);
 
             //CE_SleepinessExchangeScale = Config.Bind("#01-Sleepiness", "SleepinessExchangeScale", true, "desc");
             //CE_HungerExchangeScale = Config.Bind("#02-Hunger", "HungerExchangeScale", true, "desc");

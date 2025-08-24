@@ -223,6 +223,12 @@ namespace s649.Logger
 
             //myLogSource?.LogWarning(logHeader + text);
         }
+        public void LogWarning(List<object> objs)
+        {
+            var caller = GetCallerMemberName();
+            string text = ArrayToString("/", objs);
+            LogWarning(GetHeader(caller) + text);
+        }
         /*
         public static void LogError(string method, string text)
         {

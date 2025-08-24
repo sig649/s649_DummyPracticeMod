@@ -33,5 +33,8 @@ namespace s649_DummyPracticeMod.Codes
                 
             chara.SetObj<PracticeFatigue>(PluginSettings.ID_PracticeFatigue, fatigue);
         }
+
+        
+
     }
 }

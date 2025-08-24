@@ -21,6 +21,11 @@ namespace s649_DummyPracticeMod
         //int maxSleepiness;
         //int maxHunger;
         static int maxStamina;
+
+        static int exchange;
+        static int _fatigue;
+        static int fatigueNext = PracticeFatigue.valueNext;
+        static int fatigue;
         //private static readonly string modNS = "DPM";
         private static MyLogger myLogger => MainPlugin.myLogger;
 
@@ -80,91 +85,155 @@ namespace s649_DummyPracticeMod
                 Debug.Log(ex.StackTrace);
                 return true;
             }
-
+            //先に疲労値を取得
             //fatigue蓄積
-            //スタミナ消費割合に応じてfatigue増加。fatigue1000毎に1の睡眠(空腹)値に変換
-            int exchange = 0;
-            int _fatigue = c_trainer.GetFatigueValue();
-            int fatigueNext = PracticeFatigue.valueNext;
-            int fatigue = Mathf.Abs(a) * fatigueNext / maxStamina;
+            //スタミナ消費割合に応じてfatigue増加。fatigue1000(fatigueNextの値)毎に1の睡眠(空腹)値に変換
+            exchange = 0;
+            _fatigue = c_trainer.GetFatigueValue();
+            //int fatigueNext = PracticeFatigue.valueNext;
+            fatigue = Mathf.Abs(a) * fatigueNext / maxStamina;
+            /*
+             * 両方代替するモードで疲労蓄積を軽減するかどうかはとりあえず保留
             if (menu == ExChangeMenu.Sleepiness_priority || menu == ExChangeMenu.Hunger_priority)
             {
                 fatigue /= 2;
             }
+            */
+           
+            /*
             fatigue += _fatigue;
-            if (fatigue >= fatigueNext) 
-            { 
+            if (fatigue >= fatigueNext)
+            {
                 exchange = fatigue / fatigueNext;
                 fatigue -= exchange * fatigueNext;
             }
+            
             c_trainer.SetFatigue(fatigue);
-            if (exchange == 0) 
+            if (exchange == 0)
             {
                 checkThings.Add("fatigue:" + _fatigue + "->" + fatigue);
                 myLogger.LogInfo(checkThings);
                 return false;
             }
-
-            bool doSleepinessExchange = false, doHungerExchange = false, sleepPriority = false;
-            switch (menu) 
+            */
+            //sleepinessとhungerが代替可能かどうかチェック
+            bool doSleepinessExchange, doHungerExchange, sleepPriority;
+            doSleepinessExchange = CanSleepinessExchange() && menu != ExChangeMenu.Only_Hunger;
+            doHungerExchange = CanSleepinessExchange() && menu != ExChangeMenu.Only_Sleepiness;
+            sleepPriority = (menu == ExChangeMenu.Only_Sleepiness || menu == ExChangeMenu.Sleepiness_priority);
+            /*
+            switch (menu)
             {
                 case ExChangeMenu.None:
                     break;
                 case ExChangeMenu.Only_Sleepiness:
-                    doSleepinessExchange = true;
+                    doSleepinessExchange = CanSleepinessExchange();
                     sleepPriority = true;
                     break;
                 case ExChangeMenu.Only_Hunger:
-                    doHungerExchange = true;
+                    doHungerExchange = CanHungerExchange();
                     break;
                 case ExChangeMenu.Sleepiness_priority:
-                    doSleepinessExchange = true;
-                    doHungerExchange = true;
+                    doSleepinessExchange = CanSleepinessExchange();
+                    doHungerExchange = CanHungerExchange();
                     sleepPriority = true;
                     break;
                 case ExChangeMenu.Hunger_priority:
-                    doSleepinessExchange = true;
-                    doHungerExchange = true;
+                    doSleepinessExchange = CanSleepinessExchange();
+                    doHungerExchange = CanHungerExchange();
                     break;
             }
-            if (sleepPriority)
+            */
+            if (doSleepinessExchange || doHungerExchange)
             {
-                if (doSleepinessExchange) {
-                    if (TrySleepinessExchange(exchange))
+                exchange = FatigueSetOrConvert();
+                if (exchange == 0)
+                {
+                    checkThings.Add("fatigue:"+_fatigue + "->" + fatigue);
+                    myLogger.LogInfo(checkThings);
+                    return false;
+                }
+                if (sleepPriority)
+                {
+                    if (doSleepinessExchange)
                     {
+                        c_trainer.sleepiness.Mod(exchange);
+                        checkThings.Add("sleepiness + " + exchange);
+                        myLogger.LogInfo(checkThings);
+                        return false;
+                    }
+                    if (doHungerExchange)
+                    {
+                        c_trainer.hunger.Mod(exchange);
+                        checkThings.Add("hunger + " + exchange);
+                        myLogger.LogInfo(checkThings);
+                        return false;
+                    }
+                } 
+                else 
+                {
+                    if (doHungerExchange)
+                    {
+                        c_trainer.hunger.Mod(exchange);
+                        checkThings.Add("hunger + " + exchange);
+                        myLogger.LogInfo(checkThings);
+                        return false;
+                    }
+                    if (doSleepinessExchange)
+                    {
+                        c_trainer.sleepiness.Mod(exchange);
                         checkThings.Add("sleepiness + " + exchange);
                         myLogger.LogInfo(checkThings);
                         return false;
                     }
                 }
+            }
+            /*
+            if (sleepPriority)
+            {
+                if (doSleepinessExchange) {
+                    //fatigue加算
+                    exchange = FatigueSetOrConvert();
+                    //exchange実行
+                    c_trainer.sleepiness.Mod(exchange);
+                    checkThings.Add("sleepiness + " + exchange);
+                    myLogger.LogInfo(checkThings);
+                    return false;
+                }
                 if (doHungerExchange) {
-                    if (TryHungerExchange(exchange))
-                    {
-                        checkThings.Add("hunger + " + exchange);
-                        myLogger.LogInfo(checkThings);
-                        return false;
-                    }
+                    //fatigue加算
+                    exchange = FatigueSetOrConvert();
+                    //exchange実行
+                    c_trainer.hunger.Mod(exchange);
+                    checkThings.Add("hunger + " + exchange);
+                    myLogger.LogInfo(checkThings);
+                    return false;
                 }
             }
             else
             {
-                if (doHungerExchange) {
-                    if (TryHungerExchange(exchange))
-                    {
-                        checkThings.Add("hunger + " + exchange);
-                        myLogger.LogInfo(checkThings);
-                        return false;
-                    }
+                if (doHungerExchange)
+                {
+                    //fatigue加算
+                    exchange = FatigueSetOrConvert();
+                    //exchange実行
+                    c_trainer.hunger.Mod(exchange);
+                    checkThings.Add("hunger + " + exchange);
+                    myLogger.LogInfo(checkThings);
+                    return false;
                 }
-                if (doSleepinessExchange) {
-                    if (TrySleepinessExchange(exchange))
-                    {
-                        checkThings.Add("sleepiness + " + exchange);
-                        myLogger.LogInfo(checkThings);
-                        return false;
-                    }
+                if (doSleepinessExchange)
+                {
+                    //fatigue加算
+                    exchange = FatigueSetOrConvert();
+                    //exchange実行
+                    c_trainer.sleepiness.Mod(exchange);
+                    checkThings.Add("sleepiness + " + exchange);
+                    myLogger.LogInfo(checkThings);
+                    return false;
                 }
             }
+            */
                 /*
                 if (sleepiness < maxSleepiness)
                 {
@@ -242,13 +311,7 @@ namespace s649_DummyPracticeMod
             return (200 - value / 2 * 3) * rate / 100;
         }
         */
-        private static bool IsEnableSleepinessExchange()
-        {
-            if (!c_trainer.IsPC) return false;
-            if (sleepiness > BepInConfig.sleeinessExchangeUpperLimit) return false;
-            if (sleepiness < BepInConfig.sleeinessExchangeLowerLimit) return false;
-            return true;
-        }
+        /*
         private static bool IsEnableHungerExchange()
         {
             if (hunger > BepInConfig.hungerExchangeUpperLimit) return false;
@@ -260,7 +323,7 @@ namespace s649_DummyPracticeMod
             //int max = maxStamina;
             ////////int seed2 = (sleepiness > maxSleepiness / 2) ? 2 : 4;
             //sleepinessが代替可能な値かどうか
-            if (!IsEnableSleepinessExchange()) { return false; }
+            //if (!IsEnableSleepinessExchange()) { return false; }
             c_trainer.sleepiness.Mod(value);
             return true;
             //int rate = BepInConfig.sleeinessExchangeBaseRate;
@@ -281,7 +344,8 @@ namespace s649_DummyPracticeMod
             */
             ////////////////////////////
 
-        }
+        //}
+        /*
         private static bool TryHungerExchange(int value)
         {
             //int max = maxStamina;
@@ -310,6 +374,35 @@ namespace s649_DummyPracticeMod
             */
             ////////////////////////////
 
+        //}
+        //exchange
+        internal static bool CanHungerExchange()
+        {
+            //int sleepiness = chara.sleepiness.GetValue();
+            if (!c_trainer.IsPC) return false;
+            if (hunger >= BepInConfig.hungerExchangeUpperLimit) return false;
+            if (hunger <= BepInConfig.hungerExchangeLowerLimit) return false;
+            return true;
+        }
+        internal static bool CanSleepinessExchange()
+        {
+            //int sleepiness = chara.sleepiness.GetValue();
+            if (!c_trainer.IsPC) return false;
+            if (sleepiness >= BepInConfig.sleeinessExchangeUpperLimit) return false;
+            if (sleepiness <= BepInConfig.sleeinessExchangeLowerLimit) return false;
+            return true;
+        }
+        private static int FatigueSetOrConvert()
+        {
+            int num = 0;
+            fatigue += _fatigue;
+            if (fatigue >= fatigueNext)
+            {
+                num = fatigue / fatigueNext;
+                fatigue -= exchange * fatigueNext;
+            }
+            c_trainer.SetFatigue(fatigue);
+            return num;
         }
         /*
         private static int Lower(int a, int b)
