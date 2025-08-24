@@ -20,7 +20,7 @@ namespace s649.Logger
         }
         //private static List<string> stackHeader = new List<string> { };
         //private static List<string> _stackHeader;
-        internal string callerPackage = "";
+        internal string callerClass = "";
         internal string topMethod = "";
         //private static string lastMethod = "";
         public LogLevel MyLogLevel = LogLevel.Info;
@@ -48,14 +48,15 @@ namespace s649.Logger
             //if (stackHeader.Count > 1) { stackHeader.RemoveAt(stackHeader.Count - 1); }
         }
         */
-
-        public void SetPackageName(string s)
+        
+        public void SetCallClass(string s)
         {   //初期化。HarmonyPatchのpreかpostで、メソッドの頭で必ず呼び出す。
             //preとpostで重複呼び出しはしない事。
             //stackHeader = new List<string> { s };
             //SetHeader(s);
-            callerPackage = s;
+            callerClass = s;
         }
+        
         public void SetFookedMethod(string s)
         {   //初期化。HarmonyPatchのpreかpostで、メソッドの頭で必ず呼び出す。
             //preとpostで重複呼び出しはしない事。
@@ -91,12 +92,13 @@ namespace s649.Logger
         */
         public string GetHeader(string caller)
         {
-            return (topMethod == caller)? 
-                "[" + callerPackage + "/" + topMethod + "]" :
-                "[" + callerPackage + "/" + topMethod + "->" + caller + "]";
+            string className = (callerClass != "") ? "[" + callerClass + "]" : "";
+            return "[" + callerClass + "]" + ((topMethod == caller)? 
+                "[" + topMethod + "]" :
+                "[" + topMethod + "->" + caller + "]");
         }
         
-        public string ArrayToString(string bind, object[] array)
+        private string ArrayToString(string bind, object[] array)
         {
             //return string.Join(bind, array.Select(x => x?.ToString()));
             return string.Join(bind, array.Select(x =>
@@ -113,7 +115,7 @@ namespace s649.Logger
                 };
             }));
         }
-        public string ArrayToString(string bind, List<object> array)
+        private string ArrayToString(string bind, List<object> array)
         {
             //return string.Join(bind, array.Select(x => x?.ToString()));
             return string.Join(bind, array.Select(x =>
@@ -161,11 +163,24 @@ namespace s649.Logger
         {
             if (MyLogLevel <= LogLevel.Deep)
             {
-                var caller = GetCallerMemberName();
+                //var caller = GetCallerMemberName();
                 //var header = "[" + topMethod + "->" + caller + "]";
-                myLogSource?.LogInfo("[Deep]" + GetHeader(caller) + text);
+                myLogSource?.LogInfo("[Deep]" + text);
             }
             //myLogSource?.LogInfo(logHeader + "[Deep]" + text);
+        }
+        public void LogDeep(List<object> objs, [CallerMemberName] string memberName = "")
+        {
+            //var caller = GetCallerMemberName();
+
+            if (MyLogLevel <= LogLevel.Deep)
+            {
+                string text = ArrayToString("/", objs);
+                myLogSource?.LogInfo("[Deep]" + GetHeader(memberName) + text);
+                //var caller = GetCallerMemberName();
+                //var header = "[" + topMethod + "->" + caller + "]";
+                //myLogSource?.LogInfo(text);
+            }
         }
         /*
         public static void LogInfo(string[] caller, string text)
@@ -188,23 +203,32 @@ namespace s649.Logger
         {
             if (MyLogLevel <= LogLevel.Info)
             {
-                var caller = GetCallerMemberName();
+                //var caller = GetCallerMemberName();
                 //var header = "[" + topMethod + "->" + caller + "]";
-                myLogSource?.LogInfo(GetHeader(caller) + text);
+                myLogSource?.LogInfo(text);
             }
             //myLogSource?.LogInfo(logHeader + text);
         }
-        public void LogInfo(List<object> objs)
+        public void LogInfo(List<object> objs, [CallerMemberName] string memberName = "")
         {
-            var caller = GetCallerMemberName();
-            string text = ArrayToString("/", objs);
-            LogInfo(text, caller);
+            //var caller = GetCallerMemberName();
+            
+            if (MyLogLevel <= LogLevel.Info)
+            {
+                string text = ArrayToString("/", objs);
+                myLogSource?.LogInfo(GetHeader(memberName) + text);
+                //var caller = GetCallerMemberName();
+                //var header = "[" + topMethod + "->" + caller + "]";
+                //myLogSource?.LogInfo(text);
+            }
         }
+        /*
         private void LogInfo(string text, string caller)
         {
             if (MyLogLevel <= LogLevel.Info)
                 myLogSource?.LogInfo(GetHeader(caller) + text);
         }
+        */
         /*
         public static void LogWarning(string method, string text)
         {

@@ -7,6 +7,9 @@ using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
 using s649.Logger;
+using System.Diagnostics;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
 //using LovLevel = s649.Logger.MyLogger.LogLevel;
 namespace s649_DummyPracticeMod
 {
@@ -15,7 +18,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.0.3";
+        public const string MOD_VERSION = "1.0.0.11";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -40,11 +43,13 @@ namespace s649_DummyPracticeMod
         internal static ConfigEntry<PluginSettings.ExChangeMenu> CE_ExChangeMenu;      //スタミナ消費代替の選択肢
         //internal static ConfigEntry<int> CE_SleepinessExchangeBaseRate; //睡眠代替発生確率の基本値
         internal static ConfigEntry<int> CE_SleepinessExchangeUpperLimit; //睡眠代替の上限
-        internal static ConfigEntry<int> CE_SleepinessExchangeLowerLimit; //睡眠代替の下限
+        //internal static ConfigEntry<int> CE_SleepinessExchangeLowerLimit; //睡眠代替の下限
 
         //internal static ConfigEntry<int> CE_HungerExchangeBaseRate;     //空腹代替発生確率の基本値
         internal static ConfigEntry<int> CE_HungerExchangeUpperLimit; //睡眠代替の上限
-        internal static ConfigEntry<int> CE_HungerExchangeLowerLimit; //睡眠代替の下限
+        //internal static ConfigEntry<int> CE_HungerExchangeLowerLimit; //睡眠代替の下限
+        internal static ConfigEntry<int> CE_SleepinessExchangeDifficulty; //睡眠代替の成功難度
+        internal static ConfigEntry<int> CE_HungerExchangeDifficulty; //空腹代替の成功難度
 
         //internal static ConfigEntry<bool> CE_SleepinessExchangeScale;   //睡眠代替が睡眠値に応じてスケールするかどうか
         //internal static ConfigEntry<bool> CE_HungerExchangeScale;       //空腹代替が空腹値に応じてスケールするかどうか
@@ -63,34 +68,45 @@ namespace s649_DummyPracticeMod
         public string ce_SleepinessExchangeUpperLimit_desc = (Lang.isJP) ?
             "睡眠値の条件の上限。" :
             "Upper limit of sleep value conditions.";
-        public string ce_SleepinessExchangeLowerLimit_desc = (Lang.isJP) ?
-            "睡眠値の条件の下限。" :
-            "Lower limit of sleep value conditions.";
+        
         public string ce_HungerExchangeUpperLimit_desc = (Lang.isJP) ?
             "空腹値の条件の上限。" :
             "Upper limit of hunger value conditions.";
-        public string ce_HungerExchangeLowerLimit_desc = (Lang.isJP) ?
-            "空腹値の条件の下限。" :
-            "Lower limit of hunger value conditions.";
+        public string ce_SleepinessExchangeDifficulty_desc = (Lang.isJP) ?
+            "睡眠変換の成功難度。" :
+            "Difficulty of successful sleep conversion.";
+        public string ce_HungerExchangeDifficulty_desc = (Lang.isJP) ?
+            "空腹変換の成功難度。" :
+            "Difficulty of successful converting hunger.";
+        //init---------------------------------------------------
+        MyLogger.LogLevel init_loglevel = MyLogger.LogLevel.Info;
+        PluginSettings.ExChangeMenu init_exchangemenu = PluginSettings.ExChangeMenu.Hunger_priority;
+        int init_SleepinessExchangeUpperLimit = 100;
+        //int init_SleepinessExchangeLowerLimit = 0;
+        int init_HungerExchangeUpperLimit = 80;
+        int init_SleepinessExchangeDifficulty = 4;
+        int init_HungerExchangeDifficulty = 10;
+        //int init_HungerExchangeLowerLimit = 0;
         //loading-------------------------------------------------
         private void Start()
         {
+            //if (Lang.isJP) { Debug.Log("JP!!!!!!!!!!!!!!!!!!!!!!"); }
             ConfigVersion = Config.Bind(
                 "#System",
                 "ConfigVersion",
                 0, // デフォルトは 0 (まだ未設定相当)
                 configVersionDesc
             );
-            CE_LogLevel = Config.Bind("#zz-Debug", "LogLevel", MyLogger.LogLevel.Info, ce_loglevel_desc);
+            CE_LogLevel = Config.Bind("#zz-Debug", "LogLevel", init_loglevel, ce_loglevel_desc);
             //CE_ModEnable = Config.Bind("#general", "Mod_Enable", true, "Enable Mod function");
-            CE_ExChangeMenu = Config.Bind("#00-ExchangeSelect", "ExChangeMenu", PluginSettings.ExChangeMenu.Sleepiness_priority, ce_exchangemenu_desc);
+            CE_ExChangeMenu = Config.Bind("#00-ExchangeSelect", "ExChangeMenu", init_exchangemenu, ce_exchangemenu_desc);
             //CE_SleepinessExchangeBaseRate = Config.Bind("#01-Sleepiness", "SleepinessExchangeBaseRate", 50, "desc");
-            CE_SleepinessExchangeUpperLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeUpperLimit", 100, ce_SleepinessExchangeUpperLimit_desc);
-            CE_SleepinessExchangeLowerLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeLowerLimit", 0, ce_SleepinessExchangeLowerLimit_desc);
+            CE_SleepinessExchangeUpperLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeUpperLimit", init_SleepinessExchangeUpperLimit, ce_SleepinessExchangeUpperLimit_desc);
+            CE_SleepinessExchangeDifficulty = Config.Bind("#01-Sleepiness", "SleepinessExchangeDifficulty", init_SleepinessExchangeDifficulty, ce_SleepinessExchangeDifficulty_desc);
 
             //CE_HungerExchangeBaseRate = Config.Bind("#02-Hunger", "HungerExchangeBaseRate", 50, "desc");
-            CE_HungerExchangeUpperLimit = Config.Bind("#02-Hunger", "HungerExchangeUpperLimit", 100, ce_HungerExchangeUpperLimit_desc);
-            CE_HungerExchangeLowerLimit = Config.Bind("#02-Hunger", "HungerExchangeLowerLimit", 0, ce_HungerExchangeLowerLimit_desc);
+            CE_HungerExchangeUpperLimit = Config.Bind("#02-Hunger", "HungerExchangeUpperLimit", init_HungerExchangeUpperLimit, ce_HungerExchangeUpperLimit_desc);
+            CE_HungerExchangeDifficulty = Config.Bind("#02-Hunger", "HungerExchangeDifficulty", init_HungerExchangeDifficulty, ce_HungerExchangeDifficulty_desc);
 
             //CE_SleepinessExchangeScale = Config.Bind("#01-Sleepiness", "SleepinessExchangeScale", true, "desc");
             //CE_HungerExchangeScale = Config.Bind("#02-Hunger", "HungerExchangeScale", true, "desc");
@@ -98,14 +114,14 @@ namespace s649_DummyPracticeMod
             myLogger = new MyLogger()
             {
                 myLogSource = base.Logger,
-                callerPackage = PluginSettings.ModNS,
+                callerClass = "",
                 MyLogLevel = CE_LogLevel.Value,
                 topMethod = "Start"
             };
             if (ConfigVersion.Value < PluginSettings.CurrentConfigVersion)
             {
                 //Logger.LogInfo($"Config version outdated ({ConfigVersion.Value} < {PluginSettings.CurrentConfigVersion}). Running migration...");
-                Logger.LogInfo($"Config version outdated (" + ConfigVersion.Value + "< "+ PluginSettings.CurrentConfigVersion + "). Running migration...");
+                myLogger.LogInfo($"Config version outdated (" + ConfigVersion.Value + "< "+ PluginSettings.CurrentConfigVersion + "). Running migration...");
 
                 RunMigration(ConfigVersion.Value, PluginSettings.CurrentConfigVersion);
 
@@ -134,12 +150,12 @@ namespace s649_DummyPracticeMod
         }
         private void InitConfig()
         {
-            CE_LogLevel.Value = MyLogger.LogLevel.Info;
-            CE_ExChangeMenu.Value = PluginSettings.ExChangeMenu.Sleepiness_priority;
-            CE_HungerExchangeLowerLimit.Value = 1;
-            CE_HungerExchangeUpperLimit.Value = 99;
-            CE_SleepinessExchangeLowerLimit.Value = 1;
-            CE_SleepinessExchangeUpperLimit.Value = 99;
+            CE_LogLevel.Value = init_loglevel;
+            CE_ExChangeMenu.Value = init_exchangemenu;
+            CE_HungerExchangeDifficulty.Value = init_SleepinessExchangeDifficulty;
+            CE_HungerExchangeUpperLimit.Value = init_SleepinessExchangeUpperLimit;
+            CE_SleepinessExchangeDifficulty.Value = init_HungerExchangeDifficulty;
+            CE_SleepinessExchangeUpperLimit.Value = init_HungerExchangeUpperLimit;
         }
     }
 }
