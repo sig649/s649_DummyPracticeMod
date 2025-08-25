@@ -18,7 +18,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.1.0";
+        public const string MOD_VERSION = "1.0.2.0";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -51,6 +51,12 @@ namespace s649_DummyPracticeMod
         internal static ConfigEntry<int> CE_SleepinessExchangeRate; //睡眠代替の成功難度
         internal static ConfigEntry<int> CE_HungerExchangeRate; //空腹代替の成功難度
 
+        internal static ConfigEntry<bool> CE_AddDeepInfo; //ログ表示に詳細な情報を付加するかどうか。
+        internal static ConfigEntry<bool> CE_ShowLogTweet;//デバッグ用のメソッドを表示するかどうか
+        internal static ConfigEntry<bool> CE_ShowLogInfo;//通常のログを表示するかどうか
+        internal static ConfigEntry<bool> CE_ShowLogWarning;//警告のログを表示するかどうか
+        //internal static ConfigEntry<bool> CE_ShowLogError;//エラーのログを表示するかどうか
+
         //internal static ConfigEntry<bool> CE_SleepinessExchangeScale;   //睡眠代替が睡眠値に応じてスケールするかどうか
         //internal static ConfigEntry<bool> CE_HungerExchangeScale;       //空腹代替が空腹値に応じてスケールするかどうか
         //public static ConfigEntry<bool> CE_ModEnable;
@@ -78,6 +84,19 @@ namespace s649_DummyPracticeMod
         public string ce_HungerExchangeRate_desc = (Lang.isJP) ?
             "空腹変換の成功率に影響する。" :
             "Affects the success rate of hunger conversion.";
+        public string desc_AddDeepInfo = (Lang.isJP) ?
+            "ログに詳細な情報を追加するかどうか。" :
+            "aaaa";
+        public string desc_ShowLogTweet = (Lang.isJP) ?
+            "デバッグ用のログを出力するかどうか。" :
+            "aaaa";
+        public string desc_ShowLogInfo = (Lang.isJP) ?
+            "通常のログを出力するかどうか。" :
+            "aaaa";
+        public string desc_ShowLogWarning = (Lang.isJP) ?
+            "警告のログを出力するかどうか。" :
+            "aaaa";
+
         //init---------------------------------------------------
         MyLogger.LogLevel init_loglevel = MyLogger.LogLevel.Info;
         PluginSettings.ExChangeMenu init_exchangemenu = PluginSettings.ExChangeMenu.Hunger_priority;
@@ -86,6 +105,10 @@ namespace s649_DummyPracticeMod
         int init_HungerExchangeUpperLimit = 80;
         int init_SleepinessExchangeRate = 25;
         int init_HungerExchangeRate = 10;
+        bool init_AddDeepInfo = false;
+        bool init_ShowLogTweet = false;
+        bool init_ShowLogInfo = true;
+        bool init_ShowLogWarning = true;
         //int init_HungerExchangeLowerLimit = 0;
         //loading-------------------------------------------------
         private void Start()
@@ -108,6 +131,10 @@ namespace s649_DummyPracticeMod
             CE_HungerExchangeUpperLimit = Config.Bind("#02-Hunger", "HungerExchangeUpperLimit", init_HungerExchangeUpperLimit, ce_HungerExchangeUpperLimit_desc);
             CE_HungerExchangeRate = Config.Bind("#02-Hunger", "HungerExchangeRate", init_HungerExchangeRate, ce_HungerExchangeRate_desc);
 
+            CE_AddDeepInfo = Config.Bind("#System", "AddDeepInfo", init_AddDeepInfo, desc_AddDeepInfo);
+            CE_ShowLogTweet = Config.Bind("#System", "ShowLogTweet", init_ShowLogTweet, desc_ShowLogTweet);
+            CE_ShowLogInfo = Config.Bind("#System", "ShowLogInfo", init_ShowLogInfo, desc_ShowLogInfo);
+            CE_ShowLogWarning = Config.Bind("#System", "ShowLogWarning", init_ShowLogWarning, desc_ShowLogWarning);
             //CE_SleepinessExchangeScale = Config.Bind("#01-Sleepiness", "SleepinessExchangeScale", true, "desc");
             //CE_HungerExchangeScale = Config.Bind("#02-Hunger", "HungerExchangeScale", true, "desc");
             //PluginSettings.myLogger = new MyLogger(PluginSettings.ModNS);
@@ -158,6 +185,10 @@ namespace s649_DummyPracticeMod
             CE_HungerExchangeUpperLimit.Value = init_SleepinessExchangeUpperLimit;
             CE_SleepinessExchangeRate.Value = init_HungerExchangeRate;
             CE_SleepinessExchangeUpperLimit.Value = init_HungerExchangeUpperLimit;
+            CE_AddDeepInfo.Value = init_AddDeepInfo;
+            CE_ShowLogTweet.Value = init_ShowLogTweet;
+            CE_ShowLogInfo.Value = init_ShowLogInfo;
+            CE_ShowLogWarning.Value = init_ShowLogWarning;
         }
     }
 }

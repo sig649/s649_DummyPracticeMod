@@ -36,9 +36,9 @@ namespace s649_DummyPracticeMod
         [HarmonyPatch(typeof(StatsStamina), "Mod")]
         public static bool Prefix(StatsStamina __instance, int a)
         {
-            if (a >= 0 || BepInConfig.exchangeMenu == ExChangeMenu.None) return true;
+            if (a >= 0 || BepInProps.exchangeMenu == ExChangeMenu.None) return true;
             checkThings = new List<InfoElement>();
-            ExChangeMenu menu = BepInConfig.exchangeMenu;
+            ExChangeMenu menu = BepInProps.exchangeMenu;
             myLogger.SetFookedMethod(nameof(StatsStamina.Mod));
             myLogger.SetCallClass(typeof(StatsStamina).Name);
             try
@@ -69,13 +69,13 @@ namespace s649_DummyPracticeMod
                 currentStamina = c_trainer.stamina.value;
                 checkThings = new List<InfoElement>
                 {
-                    MakeInfoElement(c_trainer, MyLogger.LogLevel.Info),
-                    MakeInfoElement(aiAct, MyLogger.LogLevel.Deep),
-                    MakeInfoElement(sleepiness, MyLogger.LogLevel.Deep),
-                    MakeInfoElement(hunger, MyLogger.LogLevel.Deep),
-                    MakeInfoElement(a, MyLogger.LogLevel.Deep),
-                    MakeInfoElement(currentStamina, MyLogger.LogLevel.Deep),
-                    MakeInfoElement(maxStamina, MyLogger.LogLevel.Deep),
+                    MakeInfoElement(c_trainer, false),
+                    MakeInfoElement(aiAct, true),
+                    MakeInfoElement(sleepiness, true),
+                    MakeInfoElement(hunger, true),
+                    MakeInfoElement(a, true),
+                    MakeInfoElement(currentStamina, true),
+                    MakeInfoElement(maxStamina, true),
 
                 };
                 
@@ -85,7 +85,7 @@ namespace s649_DummyPracticeMod
             {
                 myLogger.LogError("CharaInfoCheckFailed for NullPo");
                 //checktext = myLogger.ArrayToString("/", checkThings);
-                myLogger.LogError(checkThings);
+                //myLogger.LogObjs(checkThings);
                 Debug.Log(ex.Message);
                 Debug.Log(ex.StackTrace);
                 return true;
@@ -293,7 +293,7 @@ namespace s649_DummyPracticeMod
         */
         private static bool TrySleepinessExchange()
         {
-            if (doSleepinessExchange && EClass.rnd(sleepiness / (BepInConfig.sleeinessExchangeRate)) == 0)
+            if (doSleepinessExchange && EClass.rnd(sleepiness / (BepInProps.sleeinessExchangeRate)) == 0)
             {
                 exchange = FatigueSetOrConvert(0);
                 c_trainer.sleepiness.Mod(exchange);
@@ -305,7 +305,7 @@ namespace s649_DummyPracticeMod
         }
         private static bool TryHungerExchange()
         {
-            if (doHungerExchange && EClass.rnd(hunger / (BepInConfig.hungerExchangeRate)) == 0)
+            if (doHungerExchange && EClass.rnd(hunger / (BepInProps.hungerExchangeRate)) == 0)
             {
                 exchange = FatigueSetOrConvert(1);
                 c_trainer.hunger.Mod(exchange);
@@ -318,8 +318,8 @@ namespace s649_DummyPracticeMod
         /*
         private static bool IsEnableHungerExchange()
         {
-            if (hunger > BepInConfig.hungerExchangeUpperLimit) return false;
-            if (hunger < BepInConfig.hungerExchangeLowerLimit) return false;
+            if (hunger > BepInProps.hungerExchangeUpperLimit) return false;
+            if (hunger < BepInProps.hungerExchangeLowerLimit) return false;
             return true;
         }
         
@@ -334,8 +334,8 @@ namespace s649_DummyPracticeMod
             c_trainer.hunger.Mod(value);
             return true;
             /*
-            int rate = BepInConfig.hungerExchangeBaseRate;
-            int border = (BepInConfig.hungerExchangeScale) ? 100 - ScaleValue(hunger, rate) : 100 - rate;
+            int rate = BepInProps.hungerExchangeBaseRate;
+            int border = (BepInProps.hungerExchangeScale) ? 100 - ScaleValue(hunger, rate) : 100 - rate;
             //判定する
             bool success = Gatya(border);
 
@@ -358,16 +358,16 @@ namespace s649_DummyPracticeMod
         {
             //int sleepiness = chara.sleepiness.GetValue();
             if (!c_trainer.IsPC) return false;
-            if (hunger >= BepInConfig.hungerExchangeUpperLimit) return false;
-            if (hunger <= BepInConfig.hungerExchangeLowerLimit) return false;
+            if (hunger >= BepInProps.hungerExchangeUpperLimit) return false;
+            if (hunger <= BepInProps.hungerExchangeLowerLimit) return false;
             return true;
         }
         internal static bool CanSleepinessExchange()
         {
             //int sleepiness = chara.sleepiness.GetValue();
             if (!c_trainer.IsPC) return false;
-            if (sleepiness >= BepInConfig.sleeinessExchangeUpperLimit) return false;
-            if (sleepiness <= BepInConfig.sleeinessExchangeLowerLimit) return false;
+            if (sleepiness >= BepInProps.sleeinessExchangeUpperLimit) return false;
+            if (sleepiness <= BepInProps.sleeinessExchangeLowerLimit) return false;
             return true;
         }
         private static int FatigueSetOrConvert(int mode = 0)

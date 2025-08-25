@@ -1,4 +1,5 @@
 ﻿//using s649EnergyMod;
+using s649_DummyPracticeMod.Codes;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,32 +11,37 @@ namespace s649.Logger
     {
         public static void AddAsInfo(this List<InfoElement> list, string text)
         {
-            InfoElement info = Components.MakeInfoElement(text);
+            InfoElement info = Components.MakeInfoElement(text, false);
+            list.Add(info);
+        }
+        public static void AddAsDeep(this List<InfoElement> list, string text)
+        {
+            InfoElement info = Components.MakeInfoElement(text, true);
             list.Add(info);
         }
     }
     public class InfoElement
     {
-        MyLogger.LogLevel level;
-        object elm;
-        public InfoElement(object o, MyLogger.LogLevel lv)
+        public bool isDeep;
+        object obj;
+        public InfoElement(object o, bool b)
         {
-            level = lv;
-            elm = o;
+            isDeep = b;
+            obj = o;
         }
         public override string ToString()
         {
-            return (level <= Components.MyLogLevel) ? 
-                ((elm is Chara)? ((Chara)elm).NameSimple : elm.ToString()):
+            return (!isDeep || BepInProps.addDeepInfo) ? 
+                ((obj is Chara)? ((Chara)obj).NameSimple : obj.ToString()):
                 "";
         }
     }
     public static class Components
     {
         public static MyLogger.LogLevel MyLogLevel;
-        public static InfoElement MakeInfoElement(object obj, MyLogger.LogLevel lv = MyLogger.LogLevel.Info)
+        public static InfoElement MakeInfoElement(object obj, bool deep = false)
         {
-            return new InfoElement(obj, lv);
+            return new InfoElement(obj, deep);
         }
     }
     public class MyLogger
@@ -154,23 +160,10 @@ namespace s649.Logger
         {
             //return string.Join(bind, array.Select(x => x?.ToString()));
             if (array == null || array.Count == 0) return "";
-            
-            return string.Join(bind, array.Select(x =>
-            {
-                if (x == null) return "";
-                return string.Join(bind, array.Select(x => x?.ToString()));
-                /*
-                return x switch
-                {
-                    //int i => $"(int){i}",
-                    string s => s,
-                    //double d => $"{d:F2}", // 小数点2桁
-                    Chara chara => chara.NameSimple,
-                    _ => x.ToString()
-                };
-                */
-            }));
-            
+
+            return string.Join(bind, array.Select(
+                x => x?.ToString()));
+
         }
 
         public void LogTweet(string text, [CallerMemberName] string memberName = "")
@@ -185,13 +178,6 @@ namespace s649.Logger
         }
 
         /*
-        public static void LogDeep(string method, string text)
-        {
-            var caller = GetCallerMemberName();
-            LogDeep(MergeCaller(caller, method) + text);
-            //if (MyLogLevel <= LogLevel.Tweet) myLogSource?.LogInfo("[Tweet]" + text);
-        }
-        */
         public void LogDeep(string text, [CallerMemberName] string memberName = "")
         {
             Log(GetHeader(memberName) + text, LogLevel.Deep);
@@ -201,7 +187,7 @@ namespace s649.Logger
             string text = ArrayToString("/", objs);
             Log(GetHeader(memberName) + text, LogLevel.Deep);
         }
-
+        */
         public void LogInfo(string text, [CallerMemberName] string memberName = "")
         {
             Log(GetHeader(memberName) + text, LogLevel.Info);
@@ -236,30 +222,30 @@ namespace s649.Logger
         }
         private void Log(string text, LogLevel lv)
         {
-            if (Components.MyLogLevel <= lv)
+            switch (lv)
             {
-                switch (lv)
-                {
-                    case LogLevel.Tweet:
-                        myLogSource?.LogInfo("[T]" + text);
-                        break;
-                    case LogLevel.Deep:
-                        myLogSource?.LogInfo("[D]" + text);
-                        break;
-                    case LogLevel.Info:
+                case LogLevel.Tweet:
+                    if(BepInProps.showLogTweet)
+                        myLogSource?.LogInfo("[Tw]" + text);
+                    break;
+                case LogLevel.Deep:
+                    //myLogSource?.LogInfo("[D]" + text);
+                    break;
+                case LogLevel.Info:
+                    if (BepInProps.showLogInfo)
                         myLogSource?.LogInfo(text);
-                        break;
-                    case LogLevel.Warning:
+                    break;
+                case LogLevel.Warning:
+                    if (BepInProps.showLogWarning)
                         myLogSource?.LogWarning(text);
-                        break;
-                    case LogLevel.Error:
-                        myLogSource?.LogError(text);
-                        break;
-                    case LogLevel.Fatal:
-                        myLogSource?.LogError(text);
-                        break;
-                    default: break;
-                }
+                    break;
+                case LogLevel.Error:
+                    myLogSource?.LogError(text);
+                    break;
+                case LogLevel.Fatal:
+                    myLogSource?.LogError(text);
+                    break;
+                default: break;
             }
         }
         

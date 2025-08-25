@@ -82,7 +82,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Codes\BepInConfig.cs" />
+    <Compile Include="Codes\BepInProps.cs" />
     <Compile Include="Codes\CharaExtension.cs" />
     <Compile Include="Codes\HarmonyPatchs\StatsStaminaPatch.cs" />
     <Compile Include="Codes\Logger.cs" />
