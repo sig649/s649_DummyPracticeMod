@@ -2,9 +2,42 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using InfoElement = s649.Logger.InfoElement;
 #nullable enable
 namespace s649.Logger
 {
+    public static class ListExtension
+    {
+        public static void AddAsInfo(this List<InfoElement> list, string text)
+        {
+            InfoElement info = Components.MakeInfoElement(text);
+            list.Add(info);
+        }
+    }
+    public class InfoElement
+    {
+        MyLogger.LogLevel level;
+        object elm;
+        public InfoElement(object o, MyLogger.LogLevel lv)
+        {
+            level = lv;
+            elm = o;
+        }
+        public override string ToString()
+        {
+            return (level <= Components.MyLogLevel) ? 
+                ((elm is Chara)? ((Chara)elm).NameSimple : elm.ToString()):
+                "";
+        }
+    }
+    public static class Components
+    {
+        public static MyLogger.LogLevel MyLogLevel;
+        public static InfoElement MakeInfoElement(object obj, MyLogger.LogLevel lv = MyLogger.LogLevel.Info)
+        {
+            return new InfoElement(obj, lv);
+        }
+    }
     public class MyLogger
     {
         
@@ -18,12 +51,13 @@ namespace s649.Logger
             Error,
             Fatal
         }
+        
         //private static List<string> stackHeader = new List<string> { };
         //private static List<string> _stackHeader;
         internal string callerClass = "";
         internal string topMethod = "";
         //private static string lastMethod = "";
-        public LogLevel MyLogLevel = LogLevel.Info;
+        
         /*
         /// <summary>
         /// ＊このメソッドはCallerMemberNameを採用したため不要になりました＊
@@ -97,7 +131,7 @@ namespace s649.Logger
                 "[" + topMethod + "]" :
                 "[" + topMethod + "->" + caller + "]");
         }
-        
+        /*
         private string ArrayToString(string bind, object[] array)
         {
             //return string.Join(bind, array.Select(x => x?.ToString()));
@@ -115,13 +149,17 @@ namespace s649.Logger
                 };
             }));
         }
-        private string ArrayToString(string bind, List<object> array)
+        */
+        private string ArrayToString(string bind, List<InfoElement> array)
         {
             //return string.Join(bind, array.Select(x => x?.ToString()));
+            if (array == null || array.Count == 0) return "";
+            
             return string.Join(bind, array.Select(x =>
             {
-                if (x == null) return "-";
-
+                if (x == null) return "";
+                return string.Join(bind, array.Select(x => x?.ToString()));
+                /*
                 return x switch
                 {
                     //int i => $"(int){i}",
@@ -130,27 +168,22 @@ namespace s649.Logger
                     Chara chara => chara.NameSimple,
                     _ => x.ToString()
                 };
+                */
             }));
+            
         }
 
-        public void LogTweet(string text)
+        public void LogTweet(string text, [CallerMemberName] string memberName = "")
         {
-            if (MyLogLevel <= LogLevel.Tweet) 
-            {
-                var caller = GetCallerMemberName();
-                //var header = "[" + topMethod + "->" + caller + "]";
-                myLogSource?.LogInfo("[Tweet]" + GetHeader(caller) + text);
-            }
-                
-            //LogTweet(MergeCaller(caller, method) + text);
-            //if (MyLogLevel <= LogLevel.Tweet) myLogSource?.LogInfo("[Tweet]" + text);
+            Log(GetHeader(memberName) + text, LogLevel.Tweet);
         }
-        /*
-        private static void LogTweet(string text)
+
+        public void LogTweet(List<InfoElement> objs, [CallerMemberName] string memberName = "")
         {
-            if (MyLogLevel <= LogLevel.Tweet) myLogSource?.LogInfo(logHeader + "[Tweet]" + text);
+            string text = ArrayToString("/", objs);
+            Log(GetHeader(memberName) + text, LogLevel.Tweet);
         }
-        */
+
         /*
         public static void LogDeep(string method, string text)
         {
@@ -159,138 +192,80 @@ namespace s649.Logger
             //if (MyLogLevel <= LogLevel.Tweet) myLogSource?.LogInfo("[Tweet]" + text);
         }
         */
-        public void LogDeep(string text)
+        public void LogDeep(string text, [CallerMemberName] string memberName = "")
         {
-            if (MyLogLevel <= LogLevel.Deep)
-            {
-                //var caller = GetCallerMemberName();
-                //var header = "[" + topMethod + "->" + caller + "]";
-                myLogSource?.LogInfo("[Deep]" + text);
-            }
-            //myLogSource?.LogInfo(logHeader + "[Deep]" + text);
+            Log(GetHeader(memberName) + text, LogLevel.Deep);
         }
-        public void LogDeep(List<object> objs, [CallerMemberName] string memberName = "")
+        public void LogDeep(List<InfoElement> objs, [CallerMemberName] string memberName = "")
         {
-            //var caller = GetCallerMemberName();
-
-            if (MyLogLevel <= LogLevel.Deep)
-            {
-                string text = ArrayToString("/", objs);
-                myLogSource?.LogInfo("[Deep]" + GetHeader(memberName) + text);
-                //var caller = GetCallerMemberName();
-                //var header = "[" + topMethod + "->" + caller + "]";
-                //myLogSource?.LogInfo(text);
-            }
-        }
-        /*
-        public static void LogInfo(string[] caller, string text)
-        {
-            string returnText = string.Join(".", caller);
-            returnText = "[" + returnText + "]" + text;
-            LogInfo(returnText);
-            //if (MyLogLevel <= LogLevel.Tweet) myLogSource?.LogInfo("[Tweet]" + text);
-        }
-        */
-        /*
-        public static void LogInfo(string method, string text)
-        {
-            var caller = GetCallerMemberName();
-            LogInfo(MergeCaller(caller, method) + text);
-            //if (MyLogLevel <= LogLevel.Tweet) myLogSource?.LogInfo("[Tweet]" + text);
-        }
-        */
-        public void LogInfo(string text)
-        {
-            if (MyLogLevel <= LogLevel.Info)
-            {
-                //var caller = GetCallerMemberName();
-                //var header = "[" + topMethod + "->" + caller + "]";
-                myLogSource?.LogInfo(text);
-            }
-            //myLogSource?.LogInfo(logHeader + text);
-        }
-        public void LogInfo(List<object> objs, [CallerMemberName] string memberName = "")
-        {
-            //var caller = GetCallerMemberName();
-            
-            if (MyLogLevel <= LogLevel.Info)
-            {
-                string text = ArrayToString("/", objs);
-                myLogSource?.LogInfo(GetHeader(memberName) + text);
-                //var caller = GetCallerMemberName();
-                //var header = "[" + topMethod + "->" + caller + "]";
-                //myLogSource?.LogInfo(text);
-            }
-        }
-        /*
-        private void LogInfo(string text, string caller)
-        {
-            if (MyLogLevel <= LogLevel.Info)
-                myLogSource?.LogInfo(GetHeader(caller) + text);
-        }
-        */
-        /*
-        public static void LogWarning(string method, string text)
-        {
-            var caller = GetCallerMemberName();
-            LogWarning(MergeCaller(caller, method) + text);
-        }
-        */
-        public void LogWarning(string text)
-        {
-            if (MyLogLevel <= LogLevel.Warning)
-            {
-                var caller = GetCallerMemberName();
-                //var header = "[" + topMethod + "->" + caller + "]";
-                myLogSource?.LogWarning(GetHeader(caller) + text);
-            }
-
-            //myLogSource?.LogWarning(logHeader + text);
-        }
-        public void LogWarning(List<object> objs)
-        {
-            var caller = GetCallerMemberName();
             string text = ArrayToString("/", objs);
-            LogWarning(GetHeader(caller) + text);
+            Log(GetHeader(memberName) + text, LogLevel.Deep);
         }
-        /*
-        public static void LogError(string method, string text)
+
+        public void LogInfo(string text, [CallerMemberName] string memberName = "")
         {
-            var caller = GetCallerMemberName();
-            LogError(MergeCaller(caller, method) + text);
+            Log(GetHeader(memberName) + text, LogLevel.Info);
         }
-        */
-        public void LogError(string text)
+        public void LogInfo(List<InfoElement> objs, [CallerMemberName] string memberName = "")
         {
-            var caller = GetCallerMemberName();
-            //var header = "[" + topMethod + "->" + caller + "]";
-            myLogSource?.LogError(GetHeader(caller) + text);
-            //myLogSource?.LogError(logHeader + text);
-        }
-        public void LogError(List<object> objs)
-        {
-            var caller = GetCallerMemberName();
             string text = ArrayToString("/", objs);
-            LogError(text, caller);
+            Log(GetHeader(memberName) + text, LogLevel.Info);
         }
-        private void LogError(string text, string caller)
+        
+        public void LogWarning(string text, [CallerMemberName] string memberName = "")
+        {
+            Log(GetHeader(memberName) + text, LogLevel.Warning);
+        }
+        public void LogWarning(List<InfoElement> objs, [CallerMemberName] string memberName = "")
         {
             //var caller = GetCallerMemberName();
-            //var header = "[" + topMethod + "->" + caller + "]";
-            myLogSource?.LogError(GetHeader(caller) + text);
-            //myLogSource?.LogError(logHeader + text);
+            string text = ArrayToString("/", objs);
+            Log(GetHeader(memberName) + text, LogLevel.Warning);
         }
-        /*
-        private static string MergeCaller(string caller, string method)
+       
+        public void LogError(string text, [CallerMemberName] string memberName = "")
         {
-            string callerText = string.Join("->", new[] { caller, method });
-            callerText = "[" + callerText + "]";
-            return callerText;
+            //var caller = GetCallerMemberName();
+            Log(GetHeader(memberName) + text, LogLevel.Error);
         }
-        */
-        private string GetCallerMemberName([CallerMemberName] string memberName = "")
+        public void LogError(List<InfoElement> objs, [CallerMemberName] string memberName = "")
         {
-            return memberName;
+            //var caller = GetCallerMemberName();
+            string text = ArrayToString("/", objs);
+            Log(GetHeader(memberName) + text, LogLevel.Error);
         }
+        private void Log(string text, LogLevel lv)
+        {
+            if (Components.MyLogLevel <= lv)
+            {
+                switch (lv)
+                {
+                    case LogLevel.Tweet:
+                        myLogSource?.LogInfo("[T]" + text);
+                        break;
+                    case LogLevel.Deep:
+                        myLogSource?.LogInfo("[D]" + text);
+                        break;
+                    case LogLevel.Info:
+                        myLogSource?.LogInfo(text);
+                        break;
+                    case LogLevel.Warning:
+                        myLogSource?.LogWarning(text);
+                        break;
+                    case LogLevel.Error:
+                        myLogSource?.LogError(text);
+                        break;
+                    case LogLevel.Fatal:
+                        myLogSource?.LogError(text);
+                        break;
+                    default: break;
+                }
+            }
+        }
+        
+        //private string GetCallerMemberName([CallerMemberName] string memberName = "")
+        //{
+        //    return memberName;
+        //}
     }
 }

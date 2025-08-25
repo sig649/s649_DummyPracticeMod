@@ -18,7 +18,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.0.11";
+        public const string MOD_VERSION = "1.0.1.0";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -73,11 +73,11 @@ namespace s649_DummyPracticeMod
             "空腹値の条件の上限。" :
             "Upper limit of hunger value conditions.";
         public string ce_SleepinessExchangeRate_desc = (Lang.isJP) ?
-            "睡眠変換の成功難度。" :
-            "Difficulty of successful sleep conversion.";
+            "睡眠変換の成功率に影響する。" :
+            "Affects the success rate of sleep conversion.";
         public string ce_HungerExchangeRate_desc = (Lang.isJP) ?
-            "空腹変換の成功難度。" :
-            "Difficulty of successful converting hunger.";
+            "空腹変換の成功率に影響する。" :
+            "Affects the success rate of hunger conversion.";
         //init---------------------------------------------------
         MyLogger.LogLevel init_loglevel = MyLogger.LogLevel.Info;
         PluginSettings.ExChangeMenu init_exchangemenu = PluginSettings.ExChangeMenu.Hunger_priority;
@@ -115,9 +115,11 @@ namespace s649_DummyPracticeMod
             {
                 myLogSource = base.Logger,
                 callerClass = "",
-                MyLogLevel = CE_LogLevel.Value,
+                //MyLogLevel = CE_LogLevel.Value,
                 topMethod = "Start"
             };
+            Components.MyLogLevel = CE_LogLevel.Value;
+
             if (ConfigVersion.Value < PluginSettings.CurrentConfigVersion)
             {
                 //Logger.LogInfo($"Config version outdated ({ConfigVersion.Value} < {PluginSettings.CurrentConfigVersion}). Running migration...");

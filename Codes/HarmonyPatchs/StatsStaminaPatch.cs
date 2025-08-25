@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using HarmonyLib;
 using s649.Logger;
+using static s649.Logger.Components;
 using s649_DummyPracticeMod.Codes;
 using static s649_DummyPracticeMod.PluginSettings;
 //using static s649.Logger.MyLogger;
@@ -29,14 +30,14 @@ namespace s649_DummyPracticeMod
         static bool doSleepinessExchange, doHungerExchange, sleepPriority;
         //private static readonly string modNS = "DPM";
         private static MyLogger myLogger => MainPlugin.myLogger;
-        static List<object> checkThings;
+        static List<InfoElement> checkThings;
 
         [HarmonyPrefix]
         [HarmonyPatch(typeof(StatsStamina), "Mod")]
         public static bool Prefix(StatsStamina __instance, int a)
         {
             if (a >= 0 || BepInConfig.exchangeMenu == ExChangeMenu.None) return true;
-            checkThings = new List<object>();
+            checkThings = new List<InfoElement>();
             ExChangeMenu menu = BepInConfig.exchangeMenu;
             myLogger.SetFookedMethod(nameof(StatsStamina.Mod));
             myLogger.SetCallClass(typeof(StatsStamina).Name);
@@ -66,18 +67,16 @@ namespace s649_DummyPracticeMod
                 //hngPhase = c_trainer.hunger.GetPhase();
                 maxStamina = c_trainer.stamina.max;
                 currentStamina = c_trainer.stamina.value;
-                checkThings = new List<object>
+                checkThings = new List<InfoElement>
                 {
-                    
-                    c_trainer,
-                    aiAct,
-                    sleepiness,
-                    //slpPhase,
-                    hunger,
-                    a,
-                    currentStamina,
-                    maxStamina
-                    //hngPhase
+                    MakeInfoElement(c_trainer, MyLogger.LogLevel.Info),
+                    MakeInfoElement(aiAct, MyLogger.LogLevel.Deep),
+                    MakeInfoElement(sleepiness, MyLogger.LogLevel.Deep),
+                    MakeInfoElement(hunger, MyLogger.LogLevel.Deep),
+                    MakeInfoElement(a, MyLogger.LogLevel.Deep),
+                    MakeInfoElement(currentStamina, MyLogger.LogLevel.Deep),
+                    MakeInfoElement(maxStamina, MyLogger.LogLevel.Deep),
+
                 };
                 
                 
@@ -127,7 +126,7 @@ namespace s649_DummyPracticeMod
             doSleepinessExchange = CanSleepinessExchange() && menu != ExChangeMenu.Only_Hunger;
             doHungerExchange = CanHungerExchange() && menu != ExChangeMenu.Only_Sleepiness;
             sleepPriority = (menu == ExChangeMenu.Only_Sleepiness || menu == ExChangeMenu.Sleepiness_priority);
-            myLogger.LogDeep(new List<object> { doSleepinessExchange, doHungerExchange, sleepPriority });
+            //myLogger.LogDeep(new List<object> { doSleepinessExchange, doHungerExchange, sleepPriority });
             /*
             switch (menu)
             {
@@ -155,7 +154,8 @@ namespace s649_DummyPracticeMod
             if (doSleepinessExchange || doHungerExchange)
             {
                 //exchange = FatigueSetOrConvert();
-                checkThings.Add("fatigue:" + _fatigue + "->" + tempFatigue);
+                
+                checkThings.AddAsInfo("fatigue:" + _fatigue + "->" + tempFatigue);
                 
                 if (sleepPriority)
                 {
@@ -267,7 +267,7 @@ namespace s649_DummyPracticeMod
                 }
                 */
                 
-            checkThings.Add("Exchange:failed"); //dt += "/Vanilla:StaminaDown";
+            checkThings.AddAsInfo("Exchange:failed"); //dt += "/Vanilla:StaminaDown";
             //checktext = myLogger.ArrayToString("/", checkThings);
             myLogger.LogInfo(checkThings);//Main.Lg(dt);
             return true;
@@ -297,7 +297,7 @@ namespace s649_DummyPracticeMod
             {
                 exchange = FatigueSetOrConvert(0);
                 c_trainer.sleepiness.Mod(exchange);
-                checkThings.Add("sleepiness + " + exchange);
+                checkThings.AddAsInfo("sleepiness + " + exchange);
                 myLogger.LogInfo(checkThings);
                 return true;
             }
@@ -309,7 +309,7 @@ namespace s649_DummyPracticeMod
             {
                 exchange = FatigueSetOrConvert(1);
                 c_trainer.hunger.Mod(exchange);
-                checkThings.Add("hunger + " + exchange);
+                checkThings.AddAsInfo("hunger + " + exchange);
                 myLogger.LogInfo(checkThings);
                 return true;
             }
