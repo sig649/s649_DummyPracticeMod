@@ -31,14 +31,16 @@ namespace s649.Logger
         }
         public override string ToString()
         {
-            return (!isDeep || BepInProps.addDeepInfo) ? 
+            return ShouldShow ? 
                 ((obj is Chara)? ((Chara)obj).NameSimple : obj.ToString()):
                 "";
         }
+        public bool ShouldShow => !isDeep || BepInProps.addDeepInfo;
+        
     }
     public static class Components
     {
-        public static MyLogger.LogLevel MyLogLevel;
+        //public static MyLogger.LogLevel MyLogLevel;
         public static InfoElement MakeInfoElement(object obj, bool deep = false)
         {
             return new InfoElement(obj, deep);
@@ -161,7 +163,7 @@ namespace s649.Logger
             //return string.Join(bind, array.Select(x => x?.ToString()));
             if (array == null || array.Count == 0) return "";
 
-            return string.Join(bind, array.Select(
+            return string.Join(bind, array.Where(x => x.ShouldShow).Select(
                 x => x?.ToString()));
 
         }

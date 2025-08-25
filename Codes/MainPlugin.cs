@@ -7,9 +7,9 @@ using BepInEx;
 using HarmonyLib;
 using BepInEx.Configuration;
 using s649.Logger;
-using System.Diagnostics;
-using UnityEngine;
-using Debug = UnityEngine.Debug;
+//using System.Diagnostics;
+//using UnityEngine;
+//using Debug = UnityEngine.Debug;
 //using LovLevel = s649.Logger.MyLogger.LogLevel;
 namespace s649_DummyPracticeMod
 {
@@ -18,7 +18,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.2.0";
+        public const string MOD_VERSION = "1.0.3.0";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -38,7 +38,7 @@ namespace s649_DummyPracticeMod
         private ConfigEntry<int> ConfigVersion;
 
         //entry---------------------------------------------------
-        internal static ConfigEntry<MyLogger.LogLevel> CE_LogLevel;//デバッグ用のログの出力LV　1:Errorのみ 
+        //internal static ConfigEntry<MyLogger.LogLevel> CE_LogLevel;//デバッグ用のログの出力LV　1:Errorのみ 
         //public static MyLogger.LogLevel cf_LogLevel => CE_LogLevel.Value;
         internal static ConfigEntry<PluginSettings.ExChangeMenu> CE_ExChangeMenu;      //スタミナ消費代替の選択肢
         //internal static ConfigEntry<int> CE_SleepinessExchangeBaseRate; //睡眠代替発生確率の基本値
@@ -65,9 +65,9 @@ namespace s649_DummyPracticeMod
         public string configVersionDesc = (Lang.isJP) ?
             "コンフィグファイルのバージョンです。この項目はいじらないでください。" :
             "This is the version of the configuration file. Please do not modify this item.";
-        public string ce_loglevel_desc = (Lang.isJP) ?
-            "BepInExのログ出力の制御。" :
-            "Controlling BepInEx log output.";
+        //public string ce_loglevel_desc = (Lang.isJP) ?
+        //    "BepInExのログ出力の制御。" :
+        //    "Controlling BepInEx log output.";
         public string ce_exchangemenu_desc = (Lang.isJP) ?
             "スタミナ消費の代替モードを選択できます。" :
             "You can select an alternative mode for stamina consumption.";
@@ -86,19 +86,19 @@ namespace s649_DummyPracticeMod
             "Affects the success rate of hunger conversion.";
         public string desc_AddDeepInfo = (Lang.isJP) ?
             "ログに詳細な情報を追加するかどうか。" :
-            "aaaa";
+            "Whether to add detailed information to the log.";
         public string desc_ShowLogTweet = (Lang.isJP) ?
             "デバッグ用のログを出力するかどうか。" :
-            "aaaa";
+            "Whether to output debug logs.";
         public string desc_ShowLogInfo = (Lang.isJP) ?
             "通常のログを出力するかどうか。" :
-            "aaaa";
+            "Whether to output normal logs.";
         public string desc_ShowLogWarning = (Lang.isJP) ?
             "警告のログを出力するかどうか。" :
-            "aaaa";
+            "Whether to output warning logs.";
 
         //init---------------------------------------------------
-        MyLogger.LogLevel init_loglevel = MyLogger.LogLevel.Info;
+        //MyLogger.LogLevel init_loglevel = MyLogger.LogLevel.Info;
         PluginSettings.ExChangeMenu init_exchangemenu = PluginSettings.ExChangeMenu.Hunger_priority;
         int init_SleepinessExchangeUpperLimit = 100;
         //int init_SleepinessExchangeLowerLimit = 0;
@@ -115,12 +115,12 @@ namespace s649_DummyPracticeMod
         {
             //if (Lang.isJP) { Debug.Log("JP!!!!!!!!!!!!!!!!!!!!!!"); }
             ConfigVersion = Config.Bind(
-                "#System",
+                "#99-System",
                 "ConfigVersion",
                 0, // デフォルトは 0 (まだ未設定相当)
                 configVersionDesc
             );
-            CE_LogLevel = Config.Bind("#zz-Debug", "LogLevel", init_loglevel, ce_loglevel_desc);
+            //CE_LogLevel = Config.Bind("#09-Debug", "LogLevel", init_loglevel, ce_loglevel_desc);
             //CE_ModEnable = Config.Bind("#general", "Mod_Enable", true, "Enable Mod function");
             CE_ExChangeMenu = Config.Bind("#00-ExchangeSelect", "ExChangeMenu", init_exchangemenu, ce_exchangemenu_desc);
             //CE_SleepinessExchangeBaseRate = Config.Bind("#01-Sleepiness", "SleepinessExchangeBaseRate", 50, "desc");
@@ -131,10 +131,10 @@ namespace s649_DummyPracticeMod
             CE_HungerExchangeUpperLimit = Config.Bind("#02-Hunger", "HungerExchangeUpperLimit", init_HungerExchangeUpperLimit, ce_HungerExchangeUpperLimit_desc);
             CE_HungerExchangeRate = Config.Bind("#02-Hunger", "HungerExchangeRate", init_HungerExchangeRate, ce_HungerExchangeRate_desc);
 
-            CE_AddDeepInfo = Config.Bind("#System", "AddDeepInfo", init_AddDeepInfo, desc_AddDeepInfo);
-            CE_ShowLogTweet = Config.Bind("#System", "ShowLogTweet", init_ShowLogTweet, desc_ShowLogTweet);
-            CE_ShowLogInfo = Config.Bind("#System", "ShowLogInfo", init_ShowLogInfo, desc_ShowLogInfo);
-            CE_ShowLogWarning = Config.Bind("#System", "ShowLogWarning", init_ShowLogWarning, desc_ShowLogWarning);
+            CE_AddDeepInfo = Config.Bind("#99-System", "AddDeepInfo", init_AddDeepInfo, desc_AddDeepInfo);
+            CE_ShowLogTweet = Config.Bind("#99-System", "ShowLogTweet", init_ShowLogTweet, desc_ShowLogTweet);
+            CE_ShowLogInfo = Config.Bind("#99-System", "ShowLogInfo", init_ShowLogInfo, desc_ShowLogInfo);
+            CE_ShowLogWarning = Config.Bind("#99-System", "ShowLogWarning", init_ShowLogWarning, desc_ShowLogWarning);
             //CE_SleepinessExchangeScale = Config.Bind("#01-Sleepiness", "SleepinessExchangeScale", true, "desc");
             //CE_HungerExchangeScale = Config.Bind("#02-Hunger", "HungerExchangeScale", true, "desc");
             //PluginSettings.myLogger = new MyLogger(PluginSettings.ModNS);
@@ -145,7 +145,7 @@ namespace s649_DummyPracticeMod
                 //MyLogLevel = CE_LogLevel.Value,
                 topMethod = "Start"
             };
-            Components.MyLogLevel = CE_LogLevel.Value;
+            //Components.MyLogLevel = CE_LogLevel.Value;
 
             if (ConfigVersion.Value < PluginSettings.CurrentConfigVersion)
             {
@@ -173,13 +173,13 @@ namespace s649_DummyPracticeMod
                 
                 InitConfig();
                 //Config.Save();
-                Logger.LogInfo("Migration from v0 to v1 complete.");
+                myLogger.LogInfo("Migration from v0 to v1 complete.");
             }
             
         }
         private void InitConfig()
         {
-            CE_LogLevel.Value = init_loglevel;
+            //CE_LogLevel.Value = init_loglevel;
             CE_ExChangeMenu.Value = init_exchangemenu;
             CE_HungerExchangeRate.Value = init_SleepinessExchangeRate;
             CE_HungerExchangeUpperLimit.Value = init_SleepinessExchangeUpperLimit;
