@@ -18,7 +18,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.4.0";
+        public const string MOD_VERSION = "1.0.4.10";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -110,9 +110,9 @@ namespace s649_DummyPracticeMod
         //init---------------------------------------------------
         //MyLogger.LogLevel init_loglevel = MyLogger.LogLevel.Info;
         PluginSettings.ExChangeMenu init_exchangemenu = PluginSettings.ExChangeMenu.Hunger_priority;
-        int init_SleepinessExchangeUpperLimit = 100;
+        int init_SleepinessExchangeUpperLimit = 80;
         //int init_SleepinessExchangeLowerLimit = 0;
-        int init_HungerExchangeUpperLimit = 80;
+        int init_HungerExchangeUpperLimit = 60;
         int init_SleepinessExchangeRate = 80;
         int init_HungerExchangeRate = 50;
         float init_SleepinessExchangeDecay = 2.5f;

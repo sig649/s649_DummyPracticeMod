@@ -7,16 +7,30 @@ using InfoElement = s649.Logger.InfoElement;
 #nullable enable
 namespace s649.Logger
 {
+    public static class ObjectExtension
+    {
+        public static string MyToStr(this object obj)
+        {
+            return obj switch
+            {
+                string s => s,
+                bool b => b ? "T" : "F",
+                Card card => card.NameSimple,
+                //Chara chara => chara.NameSimple,
+                _ => obj.ToString()
+            };
+        }
+    }
     public static class ListExtension
     {
-        public static void AddAsInfo(this List<InfoElement> list, string text)
+        public static void AddAsInfo(this List<InfoElement> list, object obj)
         {
-            InfoElement info = Components.MakeInfoElement(text, false);
+            InfoElement info = Components.MakeInfoElement(obj.MyToStr(), false);
             list.Add(info);
         }
-        public static void AddAsDeep(this List<InfoElement> list, string text)
+        public static void AddAsDeep(this List<InfoElement> list, object obj)
         {
-            InfoElement info = Components.MakeInfoElement(text, true);
+            InfoElement info = Components.MakeInfoElement(obj.MyToStr(), true);
             list.Add(info);
         }
     }

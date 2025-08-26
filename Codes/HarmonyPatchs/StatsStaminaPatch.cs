@@ -104,7 +104,7 @@ namespace s649_DummyPracticeMod
                 fatigue /= 2;
             }
             */
-           
+
             /*
             fatigue += _fatigue;
             if (fatigue >= fatigueNext)
@@ -122,9 +122,10 @@ namespace s649_DummyPracticeMod
             }
             */
             //sleepinessとhungerが代替可能かどうかチェック
-            
-            doSleepinessExchange = CanSleepinessExchange() && menu != ExChangeMenu.Only_Hunger;
-            doHungerExchange = CanHungerExchange() && menu != ExChangeMenu.Only_Sleepiness;
+            bool canSleepConv = CanSleepinessExchange();
+            bool canHungerConv = CanHungerExchange();
+            doSleepinessExchange = canSleepConv && menu != ExChangeMenu.Only_Hunger;
+            doHungerExchange = canHungerConv && menu != ExChangeMenu.Only_Sleepiness;
             sleepPriority = (menu == ExChangeMenu.Only_Sleepiness || menu == ExChangeMenu.Sleepiness_priority);
             //myLogger.LogDeep(new List<object> { doSleepinessExchange, doHungerExchange, sleepPriority });
             /*
@@ -150,24 +151,51 @@ namespace s649_DummyPracticeMod
                     break;
             }
             */
-            long tempFatigue = fatigue + _fatigue;
+            checkThings.AddAsDeep(menu);
+            checkThings.AddAsDeep(canSleepConv);
+            checkThings.AddAsDeep(canHungerConv);
+            checkThings.AddAsDeep(doSleepinessExchange);
+            checkThings.AddAsDeep(doHungerExchange);
+            //checkThings.AddAsDeep(sleepPriority);
+
             if (doSleepinessExchange || doHungerExchange)
             {
                 //exchange = FatigueSetOrConvert();
                 
-                checkThings.AddAsInfo("fatigue:" + _fatigue + "->" + tempFatigue);
-                
                 if (sleepPriority)
                 {
-                    if (TrySleepinessExchange()) { return false; }
-                    if (TryHungerExchange()) { return false; }
+                    if (TrySleepinessExchange()) {
+                        goto exchangeSuccess;
+                    }
+                    if (TryHungerExchange()) {
+                        goto exchangeSuccess;
+                    }
                 } 
                 else 
                 {
-                    if (TryHungerExchange()) { return false; }
-                    if (TrySleepinessExchange()) { return false; }
+                    if (TryHungerExchange()) {
+                        goto exchangeSuccess;
+                    }
+                    if (TrySleepinessExchange()) {
+                        goto exchangeSuccess;
+                    }
                 }
+                checkThings.AddAsInfo("Exchange:failed");
+                goto exchangeFail;
             }
+            checkThings.AddAsInfo("Cannot Exchange");
+            goto exchangeFail;
+        exchangeSuccess:
+            int currentFatigue = c_trainer.GetFatigueValue();
+            checkThings.AddAsInfo("fatigue:" + _fatigue + "->" + currentFatigue);
+            myLogger.LogInfo(checkThings);
+            return false;
+        exchangeFail:
+             //dt += "/Vanilla:StaminaDown";
+            //checktext = myLogger.ArrayToString("/", checkThings);
+            myLogger.LogInfo(checkThings);//Main.Lg(dt);
+            return true;
+
             /*
             if (sleepPriority)
             {
@@ -214,63 +242,58 @@ namespace s649_DummyPracticeMod
                 }
             }
             */
-                /*
-                if (sleepiness < maxSleepiness)
+            /*
+            if (sleepiness < maxSleepiness)
+            {
+                if (hunger < maxHunger / 2)
                 {
-                    if (hunger < maxHunger / 2)
+                    if (hngPhase == 0 && EClass.rnd(2) == 0)//v0.2.1
                     {
-                        if (hngPhase == 0 && EClass.rnd(2) == 0)//v0.2.1
-                        {
-                            c_trainer.hunger.Mod(1);
-                            checkThings.Add("hunger:Plus");
-                            checktext = myLogger.ArrayToString("/", checkThings);
-                            myLogger.LogInfo(checktext);
-                            return false;
-                        }
-                        //int seed = (hunger < maxHunger / 4) ? 5 : 10;
-                        if (hngPhase <= 1 && EClass.rnd(4) == 0)
-                        {
-                            c_trainer.hunger.Mod(1);
-                            checkThings.Add("hunger:Plus");
-                            checktext = myLogger.ArrayToString("/", checkThings);
-                            myLogger.LogInfo(checktext);
-                            return false;
-                        }
-                        if (EClass.rnd(10) == 0)
-                        {
-                            c_trainer.hunger.Mod(1);
-                            checkThings.Add("hunger:Plus");
-                            checktext = myLogger.ArrayToString("/", checkThings);
-                            myLogger.LogInfo(checktext);
-                            return false;
-                        }
-                        //if (eval) { return false; }
+                        c_trainer.hunger.Mod(1);
+                        checkThings.Add("hunger:Plus");
+                        checktext = myLogger.ArrayToString("/", checkThings);
+                        myLogger.LogInfo(checktext);
+                        return false;
+                    }
+                    //int seed = (hunger < maxHunger / 4) ? 5 : 10;
+                    if (hngPhase <= 1 && EClass.rnd(4) == 0)
+                    {
+                        c_trainer.hunger.Mod(1);
+                        checkThings.Add("hunger:Plus");
+                        checktext = myLogger.ArrayToString("/", checkThings);
+                        myLogger.LogInfo(checktext);
+                        return false;
+                    }
+                    if (EClass.rnd(10) == 0)
+                    {
+                        c_trainer.hunger.Mod(1);
+                        checkThings.Add("hunger:Plus");
+                        checktext = myLogger.ArrayToString("/", checkThings);
+                        myLogger.LogInfo(checktext);
+                        return false;
+                    }
+                    //if (eval) { return false; }
 
-                    }
-                    if (EClass.rnd(Lower(c_trainer.LV + 1000, 5000)) >= 1000)//LVが高ければ眠気増加回避※MAX 80%
-                    {
-                        //eval = true;
-                        checkThings.Add("Sleepiness:Eval"); //dt += "/Sleepiness:Eval";
-                        checktext = myLogger.ArrayToString("/", checkThings);
-                        myLogger.LogInfo(checktext);//Main.Lg(dt);
-                        return false;
-                    }
-                    int seed2 = (sleepiness > maxSleepiness / 2) ? 2 : 4;
-                    if (EClass.rnd(seed2) != 0)
-                    {
-                        c_trainer.sleepiness.Mod(1);
-                        checkThings.Add("Sleepiness:Add"); //dt += "/Sleepiness:Add";
-                        checktext = myLogger.ArrayToString("/", checkThings);
-                        myLogger.LogInfo(checktext);//Main.Lg(dt);
-                        return false;
-                    }
                 }
-                */
-                
-            checkThings.AddAsInfo("Exchange:failed"); //dt += "/Vanilla:StaminaDown";
-            //checktext = myLogger.ArrayToString("/", checkThings);
-            myLogger.LogInfo(checkThings);//Main.Lg(dt);
-            return true;
+                if (EClass.rnd(Lower(c_trainer.LV + 1000, 5000)) >= 1000)//LVが高ければ眠気増加回避※MAX 80%
+                {
+                    //eval = true;
+                    checkThings.Add("Sleepiness:Eval"); //dt += "/Sleepiness:Eval";
+                    checktext = myLogger.ArrayToString("/", checkThings);
+                    myLogger.LogInfo(checktext);//Main.Lg(dt);
+                    return false;
+                }
+                int seed2 = (sleepiness > maxSleepiness / 2) ? 2 : 4;
+                if (EClass.rnd(seed2) != 0)
+                {
+                    c_trainer.sleepiness.Mod(1);
+                    checkThings.Add("Sleepiness:Add"); //dt += "/Sleepiness:Add";
+                    checktext = myLogger.ArrayToString("/", checkThings);
+                    myLogger.LogInfo(checktext);//Main.Lg(dt);
+                    return false;
+                }
+            }
+            */
         }
 
         //////////Prefix fin/////////////////////////////////////////////////////////////
@@ -280,7 +303,7 @@ namespace s649_DummyPracticeMod
         /// </summary>
         private static bool Gatya(int num)
         {
-            return (EClass.rnd(100) <= num);
+            return (EClass.rnd(100)+1 <= num);
         }
         /*
         
@@ -299,12 +322,13 @@ namespace s649_DummyPracticeMod
             if (doSleepinessExchange)
             {
                 int rate = CalcRate(BepInProps.sleeinessExchangeRate, BepInProps.sleeinessExchangeDecay, sleepiness);
+                checkThings.AddAsDeep("Sl:"+rate + "%");
                 if (Gatya(rate))
                 {
                     exchange = FatigueSetOrConvert(0);
                     c_trainer.sleepiness.Mod(exchange);
-                    checkThings.AddAsInfo(rate+ "%:sleepiness + " + exchange);
-                    myLogger.LogInfo(checkThings);
+                    checkThings.AddAsInfo("sleepiness + " + exchange);
+                    //myLogger.LogInfo(checkThings);
                     return true;
                 }
             }
@@ -315,12 +339,13 @@ namespace s649_DummyPracticeMod
             if (doHungerExchange)
             {
                 int rate = CalcRate(BepInProps.hungerExchangeRate, BepInProps.hungerExchangeDecay, hunger);
+                checkThings.AddAsDeep("Hu:" + rate + "%");
                 if (Gatya(rate))
                 {
-                    exchange = FatigueSetOrConvert(0);
+                    exchange = FatigueSetOrConvert(1);
                     c_trainer.hunger.Mod(exchange);
-                    checkThings.AddAsInfo(rate + "%:hunger + " + exchange);
-                    myLogger.LogInfo(checkThings);
+                    checkThings.AddAsInfo("hunger + " + exchange);
+                    //myLogger.LogInfo(checkThings);
                     return true;
                 }
             }
@@ -338,8 +363,8 @@ namespace s649_DummyPracticeMod
         }
         private static int CalcRate(int baseNum, float decay, int value)
         { 
-            return (int)(baseNum * (100f * Decay((float)((value + 1) / 10) * decay + 1f)));
-            float Decay(float f) { return 1f / ((float)f); }
+            return (int)(baseNum * Rev((float)((value + 1f) / 10f) * decay ));
+            static float Rev(float f) { return 10f / (f + 10f); }
         }
         /*
         private static bool IsEnableHungerExchange()
@@ -400,6 +425,7 @@ namespace s649_DummyPracticeMod
         {
             int num = 0;
             int next = (mode == 0) ? fatigueNext : fatigueNext * 2;
+            if (fatigue < 1) fatigue = 1;
             fatigue += _fatigue;
             if (fatigue >= next)
             {
