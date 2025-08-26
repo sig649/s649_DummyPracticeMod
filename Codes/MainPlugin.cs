@@ -18,7 +18,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.3.0";
+        public const string MOD_VERSION = "1.0.4.0";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -48,8 +48,11 @@ namespace s649_DummyPracticeMod
         //internal static ConfigEntry<int> CE_HungerExchangeBaseRate;     //空腹代替発生確率の基本値
         internal static ConfigEntry<int> CE_HungerExchangeUpperLimit; //睡眠代替の上限
         //internal static ConfigEntry<int> CE_HungerExchangeLowerLimit; //睡眠代替の下限
-        internal static ConfigEntry<int> CE_SleepinessExchangeRate; //睡眠代替の成功難度
-        internal static ConfigEntry<int> CE_HungerExchangeRate; //空腹代替の成功難度
+        internal static ConfigEntry<int> CE_SleepinessExchangeRate; //睡眠代替の成功率の基本値
+        internal static ConfigEntry<int> CE_HungerExchangeRate; //空腹代替の成功率の基本値
+
+        internal static ConfigEntry<float> CE_SleepinessExchangeDecay; //睡眠代替の成功率の減衰値
+        internal static ConfigEntry<float> CE_HungerExchangeDecay; //空腹代替の成功率の減衰値
 
         internal static ConfigEntry<bool> CE_AddDeepInfo; //ログ表示に詳細な情報を付加するかどうか。
         internal static ConfigEntry<bool> CE_ShowLogTweet;//デバッグ用のメソッドを表示するかどうか
@@ -71,10 +74,10 @@ namespace s649_DummyPracticeMod
         public string ce_exchangemenu_desc = (Lang.isJP) ?
             "スタミナ消費の代替モードを選択できます。" :
             "You can select an alternative mode for stamina consumption.";
+
         public string ce_SleepinessExchangeUpperLimit_desc = (Lang.isJP) ?
             "睡眠値の条件の上限。" :
             "Upper limit of sleep value conditions.";
-        
         public string ce_HungerExchangeUpperLimit_desc = (Lang.isJP) ?
             "空腹値の条件の上限。" :
             "Upper limit of hunger value conditions.";
@@ -84,6 +87,13 @@ namespace s649_DummyPracticeMod
         public string ce_HungerExchangeRate_desc = (Lang.isJP) ?
             "空腹変換の成功率に影響する。" :
             "Affects the success rate of hunger conversion.";
+        public string ce_SleepinessExchangeDecay_desc = (Lang.isJP) ?
+            "睡眠変換の成功率の減衰に影響する。" :
+            "It affects the decay of the sleep conversion success rate.";
+        public string ce_HungerExchangeDecay_desc = (Lang.isJP) ?
+            "空腹変換の成功率の減衰に影響する。" :
+            "It affects the decay of the hunger conversion success rate.";
+
         public string desc_AddDeepInfo = (Lang.isJP) ?
             "ログに詳細な情報を追加するかどうか。" :
             "Whether to add detailed information to the log.";
@@ -103,8 +113,11 @@ namespace s649_DummyPracticeMod
         int init_SleepinessExchangeUpperLimit = 100;
         //int init_SleepinessExchangeLowerLimit = 0;
         int init_HungerExchangeUpperLimit = 80;
-        int init_SleepinessExchangeRate = 25;
-        int init_HungerExchangeRate = 10;
+        int init_SleepinessExchangeRate = 80;
+        int init_HungerExchangeRate = 50;
+        float init_SleepinessExchangeDecay = 2.5f;
+        float init_HungerExchangeDecay = 1f;
+
         bool init_AddDeepInfo = false;
         bool init_ShowLogTweet = false;
         bool init_ShowLogInfo = true;
@@ -125,11 +138,14 @@ namespace s649_DummyPracticeMod
             CE_ExChangeMenu = Config.Bind("#00-ExchangeSelect", "ExChangeMenu", init_exchangemenu, ce_exchangemenu_desc);
             //CE_SleepinessExchangeBaseRate = Config.Bind("#01-Sleepiness", "SleepinessExchangeBaseRate", 50, "desc");
             CE_SleepinessExchangeUpperLimit = Config.Bind("#01-Sleepiness", "SleepinessExchangeUpperLimit", init_SleepinessExchangeUpperLimit, ce_SleepinessExchangeUpperLimit_desc);
-            CE_SleepinessExchangeRate = Config.Bind("#01-Sleepiness", "SleepinessExchangeRate", init_SleepinessExchangeRate, ce_SleepinessExchangeRate_desc);
-
-            //CE_HungerExchangeBaseRate = Config.Bind("#02-Hunger", "HungerExchangeBaseRate", 50, "desc");
             CE_HungerExchangeUpperLimit = Config.Bind("#02-Hunger", "HungerExchangeUpperLimit", init_HungerExchangeUpperLimit, ce_HungerExchangeUpperLimit_desc);
+
+            CE_SleepinessExchangeRate = Config.Bind("#01-Sleepiness", "SleepinessExchangeRate", init_SleepinessExchangeRate, ce_SleepinessExchangeRate_desc);
             CE_HungerExchangeRate = Config.Bind("#02-Hunger", "HungerExchangeRate", init_HungerExchangeRate, ce_HungerExchangeRate_desc);
+
+            CE_SleepinessExchangeDecay = Config.Bind("#01-Sleepiness", "SleepinessExchangeDecay", init_SleepinessExchangeDecay, ce_SleepinessExchangeDecay_desc);
+            CE_HungerExchangeDecay = Config.Bind("#02-Hunger", "HungerExchangeDecay", init_HungerExchangeDecay, ce_HungerExchangeDecay_desc);
+
 
             CE_AddDeepInfo = Config.Bind("#99-System", "AddDeepInfo", init_AddDeepInfo, desc_AddDeepInfo);
             CE_ShowLogTweet = Config.Bind("#99-System", "ShowLogTweet", init_ShowLogTweet, desc_ShowLogTweet);
@@ -181,10 +197,14 @@ namespace s649_DummyPracticeMod
         {
             //CE_LogLevel.Value = init_loglevel;
             CE_ExChangeMenu.Value = init_exchangemenu;
-            CE_HungerExchangeRate.Value = init_SleepinessExchangeRate;
-            CE_HungerExchangeUpperLimit.Value = init_SleepinessExchangeUpperLimit;
-            CE_SleepinessExchangeRate.Value = init_HungerExchangeRate;
-            CE_SleepinessExchangeUpperLimit.Value = init_HungerExchangeUpperLimit;
+            CE_HungerExchangeRate.Value = init_HungerExchangeRate;
+            CE_HungerExchangeUpperLimit.Value = init_HungerExchangeUpperLimit;
+            CE_HungerExchangeDecay.Value = init_HungerExchangeDecay;
+
+            CE_SleepinessExchangeRate.Value = init_SleepinessExchangeRate;
+            CE_SleepinessExchangeUpperLimit.Value = init_SleepinessExchangeUpperLimit;
+            CE_SleepinessExchangeDecay.Value = init_SleepinessExchangeDecay;
+
             CE_AddDeepInfo.Value = init_AddDeepInfo;
             CE_ShowLogTweet.Value = init_ShowLogTweet;
             CE_ShowLogInfo.Value = init_ShowLogInfo;

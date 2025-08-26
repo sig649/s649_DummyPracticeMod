@@ -274,14 +274,16 @@ namespace s649_DummyPracticeMod
         }
 
         //////////Prefix fin/////////////////////////////////////////////////////////////
-        /*
+
         ///<summary>
-        ///100 - border の確率[%]で成功。
+        ///num の確率[%]で成功。
         /// </summary>
-        private bool Gatya(int border)
+        private static bool Gatya(int num)
         {
-            if (EClass.rnd(100) >= border) { return true; } else { return true; }
+            return (EClass.rnd(100) <= num);
         }
+        /*
+        
         ///<summary>
         ///value(0->100)の値に応じてrateを乗算する。200%->50%の変動
         /// </summary>
@@ -293,18 +295,36 @@ namespace s649_DummyPracticeMod
         */
         private static bool TrySleepinessExchange()
         {
-            if (doSleepinessExchange && EClass.rnd(sleepiness / (BepInProps.sleeinessExchangeRate)) == 0)
+            //if (doSleepinessExchange && EClass.rnd(sleepiness / (BepInProps.sleeinessExchangeRate)) == 0)
+            if (doSleepinessExchange)
             {
-                exchange = FatigueSetOrConvert(0);
-                c_trainer.sleepiness.Mod(exchange);
-                checkThings.AddAsInfo("sleepiness + " + exchange);
-                myLogger.LogInfo(checkThings);
-                return true;
+                int rate = CalcRate(BepInProps.sleeinessExchangeRate, BepInProps.sleeinessExchangeDecay, sleepiness);
+                if (Gatya(rate))
+                {
+                    exchange = FatigueSetOrConvert(0);
+                    c_trainer.sleepiness.Mod(exchange);
+                    checkThings.AddAsInfo(rate+ "%:sleepiness + " + exchange);
+                    myLogger.LogInfo(checkThings);
+                    return true;
+                }
             }
             return false;
         }
         private static bool TryHungerExchange()
         {
+            if (doHungerExchange)
+            {
+                int rate = CalcRate(BepInProps.hungerExchangeRate, BepInProps.hungerExchangeDecay, hunger);
+                if (Gatya(rate))
+                {
+                    exchange = FatigueSetOrConvert(0);
+                    c_trainer.hunger.Mod(exchange);
+                    checkThings.AddAsInfo(rate + "%:hunger + " + exchange);
+                    myLogger.LogInfo(checkThings);
+                    return true;
+                }
+            }
+            /*
             if (doHungerExchange && EClass.rnd(hunger / (BepInProps.hungerExchangeRate)) == 0)
             {
                 exchange = FatigueSetOrConvert(1);
@@ -313,7 +333,13 @@ namespace s649_DummyPracticeMod
                 myLogger.LogInfo(checkThings);
                 return true;
             }
+            */
             return false;
+        }
+        private static int CalcRate(int baseNum, float decay, int value)
+        { 
+            return (int)(baseNum * (100f * Decay((float)((value + 1) / 10) * decay + 1f)));
+            float Decay(float f) { return 1f / ((float)f); }
         }
         /*
         private static bool IsEnableHungerExchange()
