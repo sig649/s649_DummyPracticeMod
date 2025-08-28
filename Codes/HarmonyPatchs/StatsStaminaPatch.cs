@@ -321,7 +321,7 @@ namespace s649_DummyPracticeMod
             //if (doSleepinessExchange && EClass.rnd(sleepiness / (BepInProps.sleeinessExchangeRate)) == 0)
             if (doSleepinessExchange)
             {
-                int rate = CalcRate(BepInProps.sleeinessExchangeRate, BepInProps.sleeinessExchangeDecay, sleepiness);
+                int rate = CalcRate(BepInProps.sleeinessExchangeRate, BepInProps.sleeinessExchangeDecay, sleepiness, true);
                 checkThings.AddAsDeep("Sl:"+rate + "%");
                 if (Gatya(rate))
                 {
@@ -338,7 +338,7 @@ namespace s649_DummyPracticeMod
         {
             if (doHungerExchange)
             {
-                int rate = CalcRate(BepInProps.hungerExchangeRate, BepInProps.hungerExchangeDecay, hunger);
+                int rate = CalcRate(BepInProps.hungerExchangeRate, BepInProps.hungerExchangeDecay, hunger, false);
                 checkThings.AddAsDeep("Hu:" + rate + "%");
                 if (Gatya(rate))
                 {
@@ -361,9 +361,13 @@ namespace s649_DummyPracticeMod
             */
             return false;
         }
-        private static int CalcRate(int baseNum, float decay, int value)
-        { 
-            return (int)(baseNum * Rev((float)((value + 1f) / 10f) * decay ));
+        private static int CalcRate(int baseNum, float decay, int value, bool isSleep)
+        {
+            bool noDecay;
+            int rate;
+            noDecay = isSleep ? BepInProps.slepinessExchangeNoDecay : BepInProps.hungerExchangeNoDecay;
+            rate = (noDecay) ? baseNum : (int)(baseNum * Rev((float)((value + 1f) / 10f) * decay));
+            return rate;
             static float Rev(float f) { return 10f / (f + 10f); }
         }
         /*

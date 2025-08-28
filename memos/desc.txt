@@ -1,0 +1,86 @@
+﻿[h1]更新v1.0 25/08/27[/h1]
+BepInExのコンフィグの変更及び追加・内部ロジックの変更など。
+v1.0でのMOD読み込み時にコンフィグの初期化がされます。
+コンフィグの編集にModConfigGUIを導入する事を強く推奨します。
+
+・全般
+	メカニズムを変更して、木人訓練や被拘束訓練時のスタミナ消費の代わりに疲労を蓄積させ、
+  溜まった疲労を眠気度や空腹度で代替する処理に変更しました。
+	コンフィグで消費代替のモードを選べるように。（後述）
+	空腹代替に必要な疲労値は、睡眠代替の2倍になるように。（試験的）
+	睡眠値や空腹値の基本変換成功率をコンフィグで設定出来るように。
+	変換成功率の減衰度をコンフィグで設定出来るように。
+	代替の条件の上限値をコンフィグで設定できるように。
+	バランス調整のために行っていた、スタミナ消費判定を回避する仕様を全面的に廃止しました。
+	デバッグログ出力制御の項目を変更
+
+・補足（数字はデフォルトのもの）
+	ExChangeMenu・・ スタミナ消費変換のモードを選択します
+	　　Hunger_priority・・・空腹度→眠気度の順に変換
+	　　Sleepiness_priority・眠気度→空腹度の順に変換
+	　　Only_hunger・・・・・空腹度のみ変換
+	　　Only_sleepiness・・・眠気度のみ変換
+	疲労…訓練中のスタミナ消費1につき(Next/ maxStamina) * 100 の値分蓄積する。(下限1 Next:1000）
+	眠気…眠気度が80未満なら疲労値[Next * 1]につき1の眠気度に変換 成功率減衰1倍
+	空腹…空腹度が60未満なら疲労値[Next * 2]につき1の空腹度に変換 成功率減衰2.5倍
+
+
+[h1]概要[/h1]
+ダミー人形や絞首台などで訓練する時にスタミナが減少する変わりに確率で眠気か空腹度が溜まるようになります。
+眠気や空腹度が低いほど成功率が上がります。
+※※：現在プレイヤーのみ対応。
+
+[h1]将来の更新予定[/h1]
+対象を参加した仲間や住民にも拡大
+訓練で睡眠度が高まったNPCが訓練後に眠ってしまうような処理
+木人訓練を始めたら仲間や住民も一緒に訓練するようになる仕組み
+木人訓練や拘束訓練を繰り返すことで疲労の蓄積を軽減できるような仕組み
+満腹度上限を変更すると謳っているフィートの影響を入れる。
+
+素材提供：いらすとや
+
+
+
+
+
+[h1]Update v1.0 08/27/25[/h1]
+Changes and additions to BepInEx configuration, internal logic modifications, etc.
+Configuration initialization occurs when loading MODs in v1.0.
+We strongly recommend using ModConfigGUI for editing configurations.
+
+・General
+    Changed the mechanism: Instead of consuming stamina during dummy training or restrained training, fatigue accumulates.
+    Processing now substitutes accumulated fatigue with sleepiness or hunger levels.
+    Config now allows selecting the substitution mode. (See below)
+    Fatigue required for hunger substitution is now double that for sleep substitution. (Experimental)
+	Added config options to set the base conversion success rate for sleep and hunger values.
+Added config options to set the decay rate for conversion success.
+Added config options to set upper limits for substitution conditions.
+Completely removed the specification that bypassed stamina consumption checks, which was implemented for balance adjustments.
+	Changed debug log output control items
+
+・Supplement (numbers are defaults)
+    ExChangeMenu・・ Selects the stamina consumption conversion mode
+    　　Hunger_priority・・・Converts hunger → sleepiness in order
+    　　Sleepiness_priority・・Converts sleepiness → hunger in order
+    　　Only_hunger・・・・・Converts only hunger
+	　　Only_sleepiness・・・Converts only sleepiness
+    Fatigue・・・Accumulates (Next/maxStamina) * 100 per stamina consumed during training. (Minimum 1, Next:1000)
+    Sleepiness・・・If sleepiness is below 80, converts [Next * 1] fatigue points to 1 sleepiness point. Success rate decay: 1x
+	Hunger... If hunger is below 60, converts [Next * 2] fatigue points into 1 hunger point. Success rate decay: 2.5x
+
+
+[h1]Overview[/h1]
+When training on dummies or gallows, stamina decreases but sleepiness or hunger may accumulate instead.
+Lower sleepiness/hunger levels increase success rate.
+※※: Currently only supports players.
+
+[h1]Future Updates Planned[/h1]
+Expand effect to include participating companions and residents.
+Implement behavior where NPCs with high sleepiness from training fall asleep afterward.
+Add system where companions and residents join in when wooden dummy training begins.
+Add system to reduce fatigue accumulation through repeated wooden dummy or restraint training.
+Incorporate effects from features promising changes to fullness cap.
+
+Translation:DeepL
+Materials provided by: irasutoya

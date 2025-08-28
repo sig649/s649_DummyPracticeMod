@@ -18,7 +18,7 @@ namespace s649_DummyPracticeMod
         internal const int CurrentConfigVersion = 1;
         public const string GUID = "s649_DummyPracticeMod";
         public const string MOD_TITLE = "Dummy Practice Mod";
-        public const string MOD_VERSION = "1.0.4.10";
+        public const string MOD_VERSION = "1.1.0.0";
         public const string ModNS = "DPM";
         public const int ID_PracticeFatigue = 64900100;
         public enum ExChangeMenu
@@ -53,6 +53,10 @@ namespace s649_DummyPracticeMod
 
         internal static ConfigEntry<float> CE_SleepinessExchangeDecay; //睡眠代替の成功率の減衰値
         internal static ConfigEntry<float> CE_HungerExchangeDecay; //空腹代替の成功率の減衰値
+
+        internal static ConfigEntry<bool> CE_SleepinessExchangeNoDecay; //睡眠代替の減衰を無効化
+        internal static ConfigEntry<bool> CE_HungerExchangeNoDecay; //空腹代替を無効化
+
 
         internal static ConfigEntry<bool> CE_AddDeepInfo; //ログ表示に詳細な情報を付加するかどうか。
         internal static ConfigEntry<bool> CE_ShowLogTweet;//デバッグ用のメソッドを表示するかどうか
@@ -93,6 +97,12 @@ namespace s649_DummyPracticeMod
         public string ce_HungerExchangeDecay_desc = (Lang.isJP) ?
             "空腹変換の成功率の減衰に影響する。" :
             "It affects the decay of the hunger conversion success rate.";
+        public string ce_SleepinessExchangeNoDecay_desc = (Lang.isJP) ?
+           "睡眠変換の減衰を無効化する。" :
+           "Disables sleep conversion decay.";
+        public string ce_HungerExchangeNoDecay_desc = (Lang.isJP) ?
+            "空腹変換の減衰を無効化する。" :
+            "Disables hunger conversion decay.";
 
         public string desc_AddDeepInfo = (Lang.isJP) ?
             "ログに詳細な情報を追加するかどうか。" :
@@ -117,6 +127,9 @@ namespace s649_DummyPracticeMod
         int init_HungerExchangeRate = 50;
         float init_SleepinessExchangeDecay = 2.5f;
         float init_HungerExchangeDecay = 1f;
+        bool init_SleepinessExchangeNoDecay = false;
+        bool init_HungerExchangeNoDecay = false;
+
 
         bool init_AddDeepInfo = false;
         bool init_ShowLogTweet = false;
@@ -145,6 +158,9 @@ namespace s649_DummyPracticeMod
 
             CE_SleepinessExchangeDecay = Config.Bind("#01-Sleepiness", "SleepinessExchangeDecay", init_SleepinessExchangeDecay, ce_SleepinessExchangeDecay_desc);
             CE_HungerExchangeDecay = Config.Bind("#02-Hunger", "HungerExchangeDecay", init_HungerExchangeDecay, ce_HungerExchangeDecay_desc);
+
+            CE_SleepinessExchangeNoDecay = Config.Bind("#01-Sleepiness", "SleepinessExchangeNoDecay", init_SleepinessExchangeNoDecay, ce_SleepinessExchangeNoDecay_desc);
+            CE_HungerExchangeNoDecay = Config.Bind("#02-Hunger", "HungerExchangeNoDecay", init_HungerExchangeNoDecay, ce_HungerExchangeNoDecay_desc);
 
 
             CE_AddDeepInfo = Config.Bind("#99-System", "AddDeepInfo", init_AddDeepInfo, desc_AddDeepInfo);
@@ -200,10 +216,12 @@ namespace s649_DummyPracticeMod
             CE_HungerExchangeRate.Value = init_HungerExchangeRate;
             CE_HungerExchangeUpperLimit.Value = init_HungerExchangeUpperLimit;
             CE_HungerExchangeDecay.Value = init_HungerExchangeDecay;
+            CE_HungerExchangeNoDecay.Value = init_HungerExchangeNoDecay;
 
             CE_SleepinessExchangeRate.Value = init_SleepinessExchangeRate;
             CE_SleepinessExchangeUpperLimit.Value = init_SleepinessExchangeUpperLimit;
             CE_SleepinessExchangeDecay.Value = init_SleepinessExchangeDecay;
+            CE_SleepinessExchangeNoDecay.Value = init_SleepinessExchangeNoDecay;
 
             CE_AddDeepInfo.Value = init_AddDeepInfo;
             CE_ShowLogTweet.Value = init_ShowLogTweet;
