@@ -7,6 +7,7 @@ using s649_DummyPracticeMod.Codes;
 using static s649_DummyPracticeMod.PluginSettings;
 //using static s649.Logger.MyLogger;
 using UnityEngine;
+using System.Runtime.Remoting.Messaging;
 
 namespace s649_DummyPracticeMod
 {
@@ -25,7 +26,8 @@ namespace s649_DummyPracticeMod
         static int currentStamina;
         static int exchange;
         static int _fatigue;
-        static int fatigueNext = PracticeFatigue.valueNext;
+        static int fatigueNextBase => PracticeFatigue.valueNext;
+        static int fatigueNext => fatigueNextBase + (fatigueNextBase / 100 * c_trainer.LV);
         static long fatigue;
         static bool doSleepinessExchange, doHungerExchange, sleepPriority;
         //private static readonly string modNS = "DPM";
@@ -95,8 +97,9 @@ namespace s649_DummyPracticeMod
             //スタミナ消費割合に応じてfatigue増加(aが最大スタミナの1％につき1000の疲労)。fatigue1000(fatigueNextの値)毎に1の睡眠(空腹)値に変換
             exchange = 0;
             _fatigue = c_trainer.GetFatigueValue();
+            var staminaStage = GetStage(maxStamina);
             //int fatigueNext = PracticeFatigue.valueNext;
-            fatigue = (long)(Mathf.Abs(a) * fatigueNext * 100L / maxStamina);
+            fatigue = (long)(Mathf.Abs(a) * fatigueNextBase * 100L / (staminaStage + 100));
             /*
              * 両方代替するモードで疲労蓄積を軽減するかどうかはとりあえず保留
             if (menu == ExChangeMenu.Sleepiness_priority || menu == ExChangeMenu.Hunger_priority)
@@ -188,12 +191,14 @@ namespace s649_DummyPracticeMod
         exchangeSuccess:
             int currentFatigue = c_trainer.GetFatigueValue();
             checkThings.AddAsInfo("fatigue:" + _fatigue + "->" + currentFatigue);
-            myLogger.LogInfo(checkThings);
+            myLogger.LogInfo($"{c_trainer.NameSimple}/{aiAct}/Slp:{sleepiness}/Hun:{hunger}/Sta[{currentStamina}/{maxStamina}]/Fati[{c_trainer.GetFatigueValue()}/{fatigueNext}]");
+            //myLogger.LogInfo(checkThings);
             return false;
         exchangeFail:
-             //dt += "/Vanilla:StaminaDown";
+            //dt += "/Vanilla:StaminaDown";
             //checktext = myLogger.ArrayToString("/", checkThings);
-            myLogger.LogInfo(checkThings);//Main.Lg(dt);
+            //myLogger.LogInfo(checkThings);
+            myLogger.LogInfo($"{c_trainer.NameSimple}/{aiAct}/Slp:{sleepiness}/Hun:{hunger}/Sta[{currentStamina}/{maxStamina}]/Fati[{c_trainer.GetFatigueValue()}/{fatigueNext}]");
             return true;
 
             /*
@@ -297,7 +302,20 @@ namespace s649_DummyPracticeMod
         }
 
         //////////Prefix fin/////////////////////////////////////////////////////////////
+        static int GetStage(int value) 
+        {
+            int stage = value switch 
+            {
+                <= 100 => 0,
+                <= 1000 => 25,
+                <= 10000 => 100,
+                <= 100000 => 400,
+                > 100000 => 900,
+                
+            };
+            return stage;
 
+        }
         ///<summary>
         ///num の確率[%]で成功。
         /// </summary>
@@ -319,10 +337,10 @@ namespace s649_DummyPracticeMod
         private static bool TrySleepinessExchange()
         {
             //if (doSleepinessExchange && EClass.rnd(sleepiness / (BepInProps.sleeinessExchangeRate)) == 0)
-            if (doSleepinessExchange)
+            if (doSleepinessExchange && !c_trainer.HasCondition<ConAwakening>())
             {
                 int rate = CalcRate(BepInProps.sleeinessExchangeRate, BepInProps.sleeinessExchangeDecay, sleepiness, true);
-                checkThings.AddAsDeep("Sl:"+rate + "%");
+                checkThings.AddAsDeep($"Sl:{rate}%");
                 if (Gatya(rate))
                 {
                     exchange = FatigueSetOrConvert(0);
