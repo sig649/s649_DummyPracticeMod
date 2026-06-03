@@ -3,7 +3,7 @@ using s649_DummyPracticeMod.Codes;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using InfoElement = s649.Logger.InfoElement;
+//using InfoElement = s649.Logger.InfoElement;
 #nullable enable
 namespace s649.Logger
 {
@@ -23,6 +23,7 @@ namespace s649.Logger
     }
     public static class ListExtension
     {
+        /*
         public static void AddAsInfo(this List<InfoElement> list, object obj)
         {
             InfoElement info = Components.MakeInfoElement(obj.MyToStr(), false);
@@ -33,7 +34,9 @@ namespace s649.Logger
             InfoElement info = Components.MakeInfoElement(obj.MyToStr(), true);
             list.Add(info);
         }
+        */
     }
+    /*
     public class InfoElement
     {
         public bool isDeep;
@@ -49,9 +52,11 @@ namespace s649.Logger
                 ((obj is Chara)? ((Chara)obj).NameSimple : obj.ToString()):
                 "";
         }
-        public bool ShouldShow => !isDeep || BepInProps.addDeepInfo;
+        //public bool ShouldShow => !isDeep || BepInProps.addDeepInfo;
         
     }
+    */
+    /*
     public static class Components
     {
         //public static MyLogger.LogLevel MyLogLevel;
@@ -60,10 +65,12 @@ namespace s649.Logger
             return new InfoElement(obj, deep);
         }
     }
+    */
     public class MyLogger
     {
         
         public BepInEx.Logging.ManualLogSource? myLogSource;
+        /*
         public enum LogLevel
         {
             Tweet,
@@ -73,11 +80,11 @@ namespace s649.Logger
             Error,
             Fatal
         }
-        
+        */
         //private static List<string> stackHeader = new List<string> { };
         //private static List<string> _stackHeader;
-        internal string callerClass = "";
-        internal string topMethod = "";
+        //internal string callerClass = "";
+        //internal string topMethod = "";
         //private static string lastMethod = "";
         
         /*
@@ -104,7 +111,7 @@ namespace s649.Logger
             //if (stackHeader.Count > 1) { stackHeader.RemoveAt(stackHeader.Count - 1); }
         }
         */
-        
+        /*
         public void SetCallClass(string s)
         {   //初期化。HarmonyPatchのpreかpostで、メソッドの頭で必ず呼び出す。
             //preとpostで重複呼び出しはしない事。
@@ -120,32 +127,8 @@ namespace s649.Logger
             //SetHeader(s);
             topMethod = s;
         }
-        /*
-        public static void InitLogStack(List<string> sList)
-        {   //初期化。HarmonyPatchのpreかpostで、メソッドの頭で必ず呼び出す。
-            //preとpostで重複呼び出しはしない事。
-            stackHeader = sList;
-            SetHeader();
-        }
         */
         /*
-        private static void SetHeader()
-        {
-            topMethod = string.Join(".", stackHeader);
-            //logHeader = "[" + logHeader + "]";
-        }
-        private static void SetHeader(string s)
-        {
-            topMethod = s;
-            //logHeader = "[" + logHeader + "]";
-        }
-        */
-        /*
-        public void SetLevel(LogLevel level)
-        {
-            MyLogLevel = level;
-        }
-        */
         public string GetHeader(string caller)
         {
             string className = (callerClass != "") ? "[" + callerClass + "]" : "";
@@ -153,6 +136,7 @@ namespace s649.Logger
                 "[" + topMethod + "]" :
                 "[" + topMethod + "->" + caller + "]");
         }
+        *?
         /*
         private string ArrayToString(string bind, object[] array)
         {
@@ -172,6 +156,7 @@ namespace s649.Logger
             }));
         }
         */
+        /*
         private string ArrayToString(string bind, List<InfoElement> array)
         {
             //return string.Join(bind, array.Select(x => x?.ToString()));
@@ -181,7 +166,8 @@ namespace s649.Logger
                 x => x?.ToString()));
 
         }
-
+        */
+        /*
         public void LogTweet(string text, [CallerMemberName] string memberName = "")
         {
             Log(GetHeader(memberName) + text, LogLevel.Tweet);
@@ -193,17 +179,6 @@ namespace s649.Logger
             Log(GetHeader(memberName) + text, LogLevel.Tweet);
         }
 
-        /*
-        public void LogDeep(string text, [CallerMemberName] string memberName = "")
-        {
-            Log(GetHeader(memberName) + text, LogLevel.Deep);
-        }
-        public void LogDeep(List<InfoElement> objs, [CallerMemberName] string memberName = "")
-        {
-            string text = ArrayToString("/", objs);
-            Log(GetHeader(memberName) + text, LogLevel.Deep);
-        }
-        */
         public void LogInfo(string text, [CallerMemberName] string memberName = "")
         {
             Log(GetHeader(memberName) + text, LogLevel.Info);
@@ -264,10 +239,6 @@ namespace s649.Logger
                 default: break;
             }
         }
-        
-        //private string GetCallerMemberName([CallerMemberName] string memberName = "")
-        //{
-        //    return memberName;
-        //}
+        */
     }
 }
